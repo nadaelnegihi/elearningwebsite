@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document,HydratedDocument } from 'mongoose';
 
 // Define the schema for an individual answer object
 class Answer {
@@ -12,14 +12,14 @@ class Answer {
 
 @Schema()
 export class Response extends Document {
-  @Prop({ required: true })
-  responseId: string;  
+  @Prop({ required: true,unique: true })
+  responseId: mongoose.Schema.Types.ObjectId;  
 
   @Prop({ required: true })
-  userId: string;  
+  userId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ required: true })
-  quizId: string;  
+  quizId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ type: [Answer], default: [] })
   answers: Answer[];  

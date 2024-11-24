@@ -1,16 +1,16 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 
 @Schema()
 export class Progress extends Document {
   @Prop({ required: true })
-  progressId: string;  
+  progressId: mongoose.Schema.Types.ObjectId;  
 
   @Prop({ required: true })
-  userId: string;  
+  userId: mongoose.Schema.Types.ObjectId;   
 
   @Prop({ required: true })
-  courseId: string; 
+  courseId: mongoose.Schema.Types.ObjectId;  
 
   @Prop({ required: true })
   completionPercentage: number;  

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document,HydratedDocument } from 'mongoose';
+
 
 @Schema()
 class Question {
@@ -19,10 +20,10 @@ class Question {
 @Schema()
 export class Quiz extends Document {
   @Prop({ required: true })
-  quizId: string; 
+  quizId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ required: true })
-  moduleId: string; 
+  moduleId: mongoose.Schema.Types.ObjectId; ; 
 
   @Prop({ type: [Question], required: true })
   questions: Question[]; 

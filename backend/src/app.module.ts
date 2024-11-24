@@ -9,7 +9,6 @@ import { NotesModule } from './notes/notes.module';
 import { ProgressModule } from './progress/progress.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { ResponsesModule } from './responses/responses.module';
-
 import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [UsersModule, CoursesModule, ModulesModule,AuthModule,NotesModule,

@@ -1,13 +1,12 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 @Schema()
 export class Module extends Document {
   @Prop({ required: true })
-  moduleId: string; 
+  moduleId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
-  courseId: string;  
+  courseId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ required: true })
   title: string; 
