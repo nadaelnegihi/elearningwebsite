@@ -1,11 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
-
+export type UserDocument = HydratedDocument<User>
 @Schema()
-export class User extends Document {
-  @Prop({ required: true, unique: true })
-  userId: mongoose.Schema.Types.ObjectId;
-
+export class User {
   @Prop({ required: true })
   name: string;
 
@@ -21,9 +18,15 @@ export class User extends Document {
     default: 'admin', // Default value for role
   })
   role: string;
+   // Enrolled courses (for students)
+   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }] })
+   enrolledCourses: mongoose.Types.ObjectId[];
+ 
+   // Completed courses (for students)
+   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }] })
+   completedCourses: mongoose.Types.ObjectId[];
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ default: Date.now })
   createdAt: Date;
 }
-
 export const UsersSchema = SchemaFactory.createForClass(User);
