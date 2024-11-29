@@ -38,8 +38,51 @@ let UsersService = class UsersService {
         const user = await this.UserModel.findById(id);
         return user;
     }
-    async update(id, updateData) {
-        return await this.UserModel.findByIdAndUpdate(id, updateData, { new: true });
+    async updateUser(userId, updateUserDto) {
+        return await this.UserModel.findByIdAndUpdate(userId, updateUserDto, { new: true });
+    }
+    async getUserCourses(userId) {
+        const user = await this.UserModel.findById(userId)
+            .populate('studentCourses.course')
+            .populate('teachingCourses')
+            .exec();
+        if (!user) {
+            throw new Error('User not found');
+        }
+        if (user.role === 'student') {
+            return {
+                role: 'student',
+                courses: user.studentCourses.map((courseStatus) => ({
+                    course: courseStatus.course,
+                    status: courseStatus.status,
+                })),
+            };
+        }
+        else if (user.role === 'instructor') {
+            return {
+                role: 'instructor',
+                courses: user.teachingCourses,
+            };
+        }
+        throw new Error('User role does not have courses.');
+    }
+    async searchStudents(query) {
+        return this.UserModel.find({
+            role: 'student',
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } },
+            ],
+        }).exec();
+    }
+    async searchInstructors(query) {
+        return this.UserModel.find({
+            role: 'instructor',
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } },
+            ],
+        }).exec();
     }
 };
 exports.UsersService = UsersService;

@@ -12,13 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModulesSchema = exports.Module = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
-let Module = class Module extends mongoose_2.Document {
+let Module = class Module {
 };
 exports.Module = Module;
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
-], Module.prototype, "moduleId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
@@ -32,13 +28,43 @@ __decorate([
     __metadata("design:type", String)
 ], Module.prototype, "content", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [String], default: [] }),
+    (0, mongoose_1.Prop)({ required: true, enum: ['Beginner', 'Intermediate', 'Advanced'] }),
+    __metadata("design:type", String)
+], Module.prototype, "difficulty_level", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: [{
+                contentType: { type: String, enum: ['video', 'pdf', 'image'], required: true },
+                resource: { type: String, required: true },
+            }],
+        default: [],
+    }),
     __metadata("design:type", Array)
 ], Module.prototype, "resources", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true, default: Date.now }),
     __metadata("design:type", Date)
 ], Module.prototype, "createdAt", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: [{
+                title: String,
+                content: String,
+                hierarchy: [{ contentType: String, resource: String }],
+                updatedAt: { type: Date, default: Date.now },
+            }],
+        default: [],
+    }),
+    __metadata("design:type", Array)
+], Module.prototype, "versions", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], Module.prototype, "isOutdated", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Quiz' }] }),
+    __metadata("design:type", Array)
+], Module.prototype, "quizzes", void 0);
 exports.Module = Module = __decorate([
     (0, mongoose_1.Schema)()
 ], Module);

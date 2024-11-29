@@ -1,35 +1,28 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document,HydratedDocument } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 
-
-@Schema()
-class Question {
-  @Prop({ required: true })
-  questionText: string;
-
-  @Prop({ required: true })
-  options: string[]; 
-
-  @Prop({ required: true })
-  correctAnswer: string; 
-
-  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' })
-  difficulty: 'easy' | 'medium' | 'hard'; 
-}
-
+// Quiz Schema
 @Schema()
 export class Quiz extends Document {
-  @Prop({ required: true })
-  quizId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ required: true })
-  moduleId: mongoose.Schema.Types.ObjectId; ; 
+  moduleId: mongoose.Schema.Types.ObjectId; 
 
-  @Prop({ type: [Question], required: true })
-  questions: Question[]; 
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Question', required: true })
+  questions: mongoose.Types.ObjectId[]; // References to questions from the question bank
+
+  @Prop({ type: Number, required: true })
+  numberOfQuestions: number; 
+
+  @Prop({ type: [String], enum: ['MCQ', 'True/False'], required: true })
+  questionTypes: string[]; 
 
   @Prop({ default: Date.now })
-  createdAt: Date; 
+  createdAt: Date; // Quiz creation timestamp
+
+  @Prop({ required: true })
+  createdBy: mongoose.Schema.Types.ObjectId; 
 }
 
+export type QuizDocument = HydratedDocument<Quiz>;
 export const QuizzesSchema = SchemaFactory.createForClass(Quiz);

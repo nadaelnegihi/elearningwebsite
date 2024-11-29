@@ -1,8 +1,8 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards,Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './models/users.schema';
-import { UpdateUserDto } from './dto/UpdateUser.dto';
+import { User,UserDocument } from './models/users.schema';
+import { UpdateUserDto } from './dto/UpdateUser';
 import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Role, Roles } from 'src/auth/decorators/roles.decorator';
@@ -15,15 +15,39 @@ export class UsersController {
       @UseGuards(AuthGuard) // Ensure the user is authenticated
       @Get('profile')
       async getProfile(@Req() req: any) {
-        const userId = req.user.userid; // Extract `userid` from the JWT
+        const userId = req.user._id; // Extract `userid` from the JWT
         return this.usersService.findById(userId);
       }
-      @UseGuards(AuthGuard)
-      @Put(':id')
-    async updateStudent(@Param('id') id:string,@Body()studentData: UpdateUserDto) {
-        const updatedStudent = await this.usersService.update(id, studentData);
-        return updatedStudent;       
-    }
+      @UseGuards(AuthGuard) 
+      @Put('profile')
+      async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+        const userId = req.user._id; // Extract `userid` from the JWT
+        return this.usersService.updateUser(userId, updateUserDto);
+      }
+      @UseGuards(AuthGuard) // Ensure the user is authenticated
+      @Get('courses')
+      async getUserCourses(@Req() req: any) {
+        const userId = req.user._id; // Extract `userid` from the JWT
+        return this.usersService.getUserCourses(userId);
+      }
+
+      @UseGuards(AuthGuard, authorizationGuard)
+      @Roles(Role.Instructor)
+      @Get('search-students')
+      async searchStudents(
+        @Query('query') query: string,
+      ): Promise<UserDocument[]> {
+        return this.usersService.searchStudents(query);
+      }
+
+      @UseGuards(AuthGuard, authorizationGuard)
+      @Roles(Role.Student)
+      @Get('instructors-search')
+      async searchInstructors(
+        @Query('query') query: string,
+      ): Promise<UserDocument[]> {
+        return this.usersService.searchInstructors(query);
+      }
     }
     
 

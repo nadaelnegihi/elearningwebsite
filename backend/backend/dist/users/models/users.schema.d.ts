@@ -5,8 +5,13 @@ export declare class User {
     email: string;
     password: string;
     role: string;
-    enrolledCourses: mongoose.Types.ObjectId[];
-    completedCourses: mongoose.Types.ObjectId[];
+    level: string;
+    studentCourses?: {
+        course: mongoose.Types.ObjectId;
+        status: string;
+    }[];
+    teachingCourses?: mongoose.Types.ObjectId[];
+    quizResponses?: mongoose.Types.ObjectId[];
     createdAt: Date;
 }
 export declare const UsersSchema: mongoose.Schema<User, mongoose.Model<User, any, any, any, mongoose.Document<unknown, any, User> & User & {

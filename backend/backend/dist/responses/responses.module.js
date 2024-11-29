@@ -17,9 +17,10 @@ let ResponsesModule = class ResponsesModule {
 exports.ResponsesModule = ResponsesModule;
 exports.ResponsesModule = ResponsesModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'responses', schema: responses_schema_1.ResponsesSchema }])],
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Response', schema: responses_schema_1.ResponsesSchema }])],
         providers: [responses_service_1.ResponsesService],
-        controllers: [responses_controller_1.ResponsesController]
+        controllers: [responses_controller_1.ResponsesController],
+        exports: [responses_service_1.ResponsesService, mongoose_1.MongooseModule]
     })
 ], ResponsesModule);
 //# sourceMappingURL=responses.module.js.map

@@ -1,16 +1,13 @@
-import mongoose, { Document } from 'mongoose';
-declare class Question {
-    questionText: string;
-    options: string[];
-    correctAnswer: string;
-    difficulty: 'easy' | 'medium' | 'hard';
-}
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 export declare class Quiz extends Document {
-    quizId: mongoose.Schema.Types.ObjectId;
     moduleId: mongoose.Schema.Types.ObjectId;
-    questions: Question[];
+    questions: mongoose.Types.ObjectId[];
+    numberOfQuestions: number;
+    questionTypes: string[];
     createdAt: Date;
+    createdBy: mongoose.Schema.Types.ObjectId;
 }
+export type QuizDocument = HydratedDocument<Quiz>;
 export declare const QuizzesSchema: mongoose.Schema<Quiz, mongoose.Model<Quiz, any, any, any, mongoose.Document<unknown, any, Quiz> & Quiz & Required<{
     _id: unknown;
 }> & {
@@ -20,4 +17,3 @@ export declare const QuizzesSchema: mongoose.Schema<Quiz, mongoose.Model<Quiz, a
 }> & {
     __v: number;
 }>;
-export {};

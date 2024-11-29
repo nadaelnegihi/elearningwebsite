@@ -17,10 +17,6 @@ let Course = class Course extends mongoose_2.Document {
 exports.Course = Course;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
-], Course.prototype, "courseId", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], Course.prototype, "title", void 0);
 __decorate([
@@ -36,9 +32,13 @@ __decorate([
     __metadata("design:type", String)
 ], Course.prototype, "difficulty_level", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'User', required: true }),
-    __metadata("design:type", mongoose_2.default.Types.ObjectId)
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
 ], Course.prototype, "created_by", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Module' }] }),
+    __metadata("design:type", Array)
+], Course.prototype, "modules", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true, default: Date.now }),
     __metadata("design:type", Date)

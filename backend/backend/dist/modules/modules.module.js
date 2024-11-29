@@ -12,14 +12,23 @@ const modules_service_1 = require("./modules.service");
 const modules_controller_1 = require("./modules.controller");
 const mongoose_1 = require("@nestjs/mongoose");
 const modules_schema_1 = require("./models/modules.schema");
+const platform_express_1 = require("@nestjs/platform-express");
+const courses_module_1 = require("../courses/courses.module");
+const users_module_1 = require("../users/users.module");
 let ModulesModule = class ModulesModule {
 };
 exports.ModulesModule = ModulesModule;
 exports.ModulesModule = ModulesModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'modules', schema: modules_schema_1.ModulesSchema }])],
+        imports: [courses_module_1.CoursesModule, users_module_1.UsersModule,
+            mongoose_1.MongooseModule.forFeature([{ name: 'Module', schema: modules_schema_1.ModulesSchema }]),
+            platform_express_1.MulterModule.register({
+                dest: './uploads',
+            }),
+        ],
         providers: [modules_service_1.ModulesService],
-        controllers: [modules_controller_1.ModulesController]
+        controllers: [modules_controller_1.ModulesController],
+        exports: [modules_service_1.ModulesService, mongoose_1.MongooseModule]
     })
 ], ModulesModule);
 //# sourceMappingURL=modules.module.js.map

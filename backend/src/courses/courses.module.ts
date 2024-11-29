@@ -3,9 +3,11 @@ import { CoursesService } from './courses.service';
 import { CoursesController } from './courses.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesSchema } from './models/courses.schema';
+import { UsersModule } from 'src/users/users.module';
 @Module({
-    imports:[MongooseModule.forFeature([{name:'courses',schema:CoursesSchema}])],
+    imports:[UsersModule,MongooseModule.forFeature([{name:'Course',schema:CoursesSchema}])],
     providers: [CoursesService],
-    controllers: [CoursesController]
+    controllers: [CoursesController],
+    exports:[CoursesService,MongooseModule]
   })
 export class CoursesModule {}

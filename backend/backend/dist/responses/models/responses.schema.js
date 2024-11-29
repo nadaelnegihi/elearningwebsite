@@ -16,8 +16,8 @@ class Answer {
 }
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Answer.prototype, "questionText", void 0);
+    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
+], Answer.prototype, "questionId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
@@ -25,10 +25,6 @@ __decorate([
 let Response = class Response extends mongoose_2.Document {
 };
 exports.Response = Response;
-__decorate([
-    (0, mongoose_1.Prop)({ required: true, unique: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
-], Response.prototype, "responseId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)

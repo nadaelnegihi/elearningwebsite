@@ -17,9 +17,10 @@ let NotesModule = class NotesModule {
 exports.NotesModule = NotesModule;
 exports.NotesModule = NotesModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'notes', schema: notes_schema_1.NotesSchema }])],
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Note', schema: notes_schema_1.NotesSchema }])],
         providers: [notes_service_1.NotesService],
-        controllers: [notes_controller_1.NotesController]
+        controllers: [notes_controller_1.NotesController],
+        exports: [notes_service_1.NotesService, mongoose_1.MongooseModule]
     })
 ], NotesModule);
 //# sourceMappingURL=notes.module.js.map

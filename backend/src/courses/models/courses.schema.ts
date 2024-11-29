@@ -1,30 +1,31 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
-export type courseDocument = HydratedDocument<Course> 
+
+export type CourseDocument = HydratedDocument<Course>;
+
 @Schema()
 export class Course extends Document {
 
   @Prop({ required: true })
-  courseId: mongoose.Schema.Types.ObjectId;
+  title: string;
 
   @Prop({ required: true })
-  title: string;  
+  description: string;
 
   @Prop({ required: true })
-  description: string;  
-
-  @Prop({ required: true })
-  category: string;  //Math , CS, Science...
+  category: string; // Math, CS, Science...
 
   @Prop({ required: true, enum: ['Beginner', 'Intermediate', 'Advanced'] })
-  difficulty_level: string; 
+  difficulty_level: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  created_by: mongoose.Types.ObjectId;
+  @Prop({ required: true })
+  created_by: string;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Module' }] })
+  modules: mongoose.Types.ObjectId[];
 
   @Prop({ required: true, default: Date.now })
   createdAt: Date;
-
 }
 
 export const CoursesSchema = SchemaFactory.createForClass(Course);

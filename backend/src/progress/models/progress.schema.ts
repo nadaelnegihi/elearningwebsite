@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
-
+export type ProgressDocument = HydratedDocument<Progress>;
 @Schema()
 export class Progress extends Document {
   @Prop({ required: true })

@@ -17,9 +17,10 @@ let QuizzesModule = class QuizzesModule {
 exports.QuizzesModule = QuizzesModule;
 exports.QuizzesModule = QuizzesModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'quizzes', schema: quizzes_schema_1.QuizzesSchema }])],
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Question', schema: quizzes_schema_1.QuizzesSchema }])],
         providers: [quizzes_service_1.QuizzesService],
-        controllers: [quizzes_controller_1.QuizzesController]
+        controllers: [quizzes_controller_1.QuizzesController],
+        exports: [quizzes_service_1.QuizzesService, mongoose_1.MongooseModule]
     })
 ], QuizzesModule);
 //# sourceMappingURL=quizzes.module.js.map

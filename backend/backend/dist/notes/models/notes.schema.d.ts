@@ -1,4 +1,5 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
+export type NoteDocument = HydratedDocument<Note>;
 export declare class Note extends Document {
     noteId: mongoose.Schema.Types.ObjectId;
     userId: mongoose.Schema.Types.ObjectId;

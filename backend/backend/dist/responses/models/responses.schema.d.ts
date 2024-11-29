@@ -1,16 +1,16 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 declare class Answer {
-    questionText: string;
+    questionId: mongoose.Schema.Types.ObjectId;
     answer: string;
 }
 export declare class Response extends Document {
-    responseId: mongoose.Schema.Types.ObjectId;
     userId: mongoose.Schema.Types.ObjectId;
     quizId: mongoose.Schema.Types.ObjectId;
     answers: Answer[];
     score: number;
     submittedAt: Date;
 }
+export type ResponseDocument = HydratedDocument<Response>;
 export declare const ResponsesSchema: mongoose.Schema<Response, mongoose.Model<Response, any, any, any, mongoose.Document<unknown, any, Response> & Response & Required<{
     _id: unknown;
 }> & {

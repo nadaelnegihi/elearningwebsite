@@ -1,4 +1,5 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
+export type ProgressDocument = HydratedDocument<Progress>;
 export declare class Progress extends Document {
     progressId: mongoose.Schema.Types.ObjectId;
     userId: mongoose.Schema.Types.ObjectId;

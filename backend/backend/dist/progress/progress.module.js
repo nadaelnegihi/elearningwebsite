@@ -17,9 +17,10 @@ let ProgressModule = class ProgressModule {
 exports.ProgressModule = ProgressModule;
 exports.ProgressModule = ProgressModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'progress', schema: progress_schema_1.ProgressSchema }])],
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Progress', schema: progress_schema_1.ProgressSchema }])],
         providers: [progress_service_1.ProgressService],
-        controllers: [progress_controller_1.ProgressController]
+        controllers: [progress_controller_1.ProgressController],
+        exports: [progress_service_1.ProgressService, mongoose_1.MongooseModule]
     })
 ], ProgressModule);
 //# sourceMappingURL=progress.module.js.map

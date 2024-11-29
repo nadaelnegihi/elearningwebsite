@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
-export type UserDocument = HydratedDocument<User>
+
+export type UserDocument = HydratedDocument<User>;
+
 @Schema()
 export class User {
   @Prop({ required: true })
@@ -15,18 +17,44 @@ export class User {
   @Prop({
     required: true,
     enum: ['student', 'instructor', 'admin'],
-    default: 'admin', // Default value for role
+    default: 'admin',
   })
   role: string;
-   // Enrolled courses (for students)
-   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }] })
-   enrolledCourses: mongoose.Types.ObjectId[];
- 
-   // Completed courses (for students)
-   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }] })
-   completedCourses: mongoose.Types.ObjectId[];
+
+  @Prop({ required: true, enum: ['Below Average', 'Average', 'Above Average'], default:'Below Average'})
+  level: string;
+
+  @Prop({
+    type: [{ course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }, status: { type: String, enum: ['enrolled', 'completed'], default: 'enrolled' } }],
+    required: function () {
+      return this.role === 'student';
+    },
+  })
+  studentCourses?: {
+    course: mongoose.Types.ObjectId;
+    status: string;
+  }[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+    required: function () {
+      return this.role === 'instructor'; // Only required if the role is instructor
+    },
+  })
+  teachingCourses?: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }],
+    required: function () {
+      return this.role === 'student'; // Only for students
+    },
+  })
+  quizResponses?: mongoose.Types.ObjectId[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
+
+ 
 }
+
 export const UsersSchema = SchemaFactory.createForClass(User);

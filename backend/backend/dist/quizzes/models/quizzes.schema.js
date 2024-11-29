@@ -12,47 +12,33 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuizzesSchema = exports.Quiz = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
-let Question = class Question {
-};
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Question.prototype, "questionText", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Array)
-], Question.prototype, "options", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Question.prototype, "correctAnswer", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' }),
-    __metadata("design:type", String)
-], Question.prototype, "difficulty", void 0);
-Question = __decorate([
-    (0, mongoose_1.Schema)()
-], Question);
 let Quiz = class Quiz extends mongoose_2.Document {
-    ;
 };
 exports.Quiz = Quiz;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
-], Quiz.prototype, "quizId", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
 ], Quiz.prototype, "moduleId", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [Question], required: true }),
+    (0, mongoose_1.Prop)({ type: [mongoose_2.default.Schema.Types.ObjectId], ref: 'Question', required: true }),
     __metadata("design:type", Array)
 ], Quiz.prototype, "questions", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: Number, required: true }),
+    __metadata("design:type", Number)
+], Quiz.prototype, "numberOfQuestions", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [String], enum: ['MCQ', 'True/False'], required: true }),
+    __metadata("design:type", Array)
+], Quiz.prototype, "questionTypes", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
 ], Quiz.prototype, "createdAt", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
+], Quiz.prototype, "createdBy", void 0);
 exports.Quiz = Quiz = __decorate([
     (0, mongoose_1.Schema)()
 ], Quiz);

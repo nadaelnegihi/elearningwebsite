@@ -1,34 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document,HydratedDocument } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 
-// Define the schema for an individual answer object
+// Answer schema (User's answer to a question)
 class Answer {
   @Prop({ required: true })
-  questionText: string;  
+  questionId: mongoose.Schema.Types.ObjectId; // Reference to the Question
 
   @Prop({ required: true })
-  answer: string;  
+  answer: string; // The user's selected answer
 }
 
 @Schema()
 export class Response extends Document {
-  @Prop({ required: true,unique: true })
-  responseId: mongoose.Schema.Types.ObjectId;  
 
   @Prop({ required: true })
-  userId: mongoose.Schema.Types.ObjectId; 
+  userId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
-  quizId: mongoose.Schema.Types.ObjectId; 
+  quizId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ type: [Answer], default: [] })
-  answers: Answer[];  
+  answers: Answer[];
 
   @Prop({ required: true })
-  score: number;  
+  score: number;
 
   @Prop({ default: Date.now })
-  submittedAt: Date;  
+  submittedAt: Date;
 }
 
+export type ResponseDocument = HydratedDocument<Response>;
 export const ResponsesSchema = SchemaFactory.createForClass(Response);

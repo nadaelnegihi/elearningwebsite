@@ -15,19 +15,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
-const UpdateUser_dto_1 = require("./dto/UpdateUser.dto");
+const UpdateUser_1 = require("./dto/UpdateUser");
 const authentication_guard_1 = require("../auth/guards/authentication.guard");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const authorization_guard_1 = require("../auth/guards/authorization.guard");
 let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
     async getProfile(req) {
-        const userId = req.user.userid;
+        const userId = req.user._id;
         return this.usersService.findById(userId);
     }
-    async updateStudent(id, studentData) {
-        const updatedStudent = await this.usersService.update(id, studentData);
-        return updatedStudent;
+    async updateProfile(req, updateUserDto) {
+        const userId = req.user._id;
+        return this.usersService.updateUser(userId, updateUserDto);
+    }
+    async getUserCourses(req) {
+        const userId = req.user._id;
+        return this.usersService.getUserCourses(userId);
+    }
+    async searchStudents(query) {
+        return this.usersService.searchStudents(query);
+    }
+    async searchInstructors(query) {
+        return this.usersService.searchInstructors(query);
     }
 };
 exports.UsersController = UsersController;
@@ -41,13 +53,39 @@ __decorate([
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.UseGuards)(authentication_guard_1.AuthGuard),
-    (0, common_1.Put)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Put)('profile'),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, UpdateUser_dto_1.UpdateUserDto]),
+    __metadata("design:paramtypes", [Object, UpdateUser_1.UpdateUserDto]),
     __metadata("design:returntype", Promise)
-], UsersController.prototype, "updateStudent", null);
+], UsersController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(authentication_guard_1.AuthGuard),
+    (0, common_1.Get)('courses'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getUserCourses", null);
+__decorate([
+    (0, common_1.UseGuards)(authentication_guard_1.AuthGuard, authorization_guard_1.authorizationGuard),
+    (0, roles_decorator_1.Roles)(roles_decorator_1.Role.Instructor),
+    (0, common_1.Get)('search-students'),
+    __param(0, (0, common_1.Query)('query')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "searchStudents", null);
+__decorate([
+    (0, common_1.UseGuards)(authentication_guard_1.AuthGuard, authorization_guard_1.authorizationGuard),
+    (0, roles_decorator_1.Roles)(roles_decorator_1.Role.Student),
+    (0, common_1.Get)('instructors-search'),
+    __param(0, (0, common_1.Query)('query')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "searchInstructors", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])

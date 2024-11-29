@@ -36,13 +36,36 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Course' }] }),
-    __metadata("design:type", Array)
-], User.prototype, "enrolledCourses", void 0);
+    (0, mongoose_1.Prop)({ required: true, enum: ['Below Average', 'Average', 'Above Average'], default: 'Below Average' }),
+    __metadata("design:type", String)
+], User.prototype, "level", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Course' }] }),
+    (0, mongoose_1.Prop)({
+        type: [{ course: { type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Course' }, status: { type: String, enum: ['enrolled', 'completed'], default: 'enrolled' } }],
+        required: function () {
+            return this.role === 'student';
+        },
+    }),
     __metadata("design:type", Array)
-], User.prototype, "completedCourses", void 0);
+], User.prototype, "studentCourses", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Course' }],
+        required: function () {
+            return this.role === 'instructor';
+        },
+    }),
+    __metadata("design:type", Array)
+], User.prototype, "teachingCourses", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Response' }],
+        required: function () {
+            return this.role === 'student';
+        },
+    }),
+    __metadata("design:type", Array)
+], User.prototype, "quizResponses", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
