@@ -15,7 +15,7 @@ export class UsersController {
       @UseGuards(AuthGuard) // Ensure the user is authenticated
       @Get('profile')
       async getProfile(@Req() req: any) {
-        const userId = req.user._id; // Extract `userid` from the JWT
+        const userId = req.user.userid; // Extract `userid` from the JWT
         return this.usersService.findById(userId);
       }
       @UseGuards(AuthGuard) 
@@ -32,7 +32,7 @@ export class UsersController {
       }
 
       @UseGuards(AuthGuard, authorizationGuard)
-      @Roles(Role.Instructor)
+      @Roles(Role.Instructor, Role.Admin)
       @Get('search-students')
       async searchStudents(
         @Query('query') query: string,
