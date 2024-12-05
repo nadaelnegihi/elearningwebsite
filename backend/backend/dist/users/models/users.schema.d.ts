@@ -13,6 +13,7 @@ export declare class User {
     teachingCourses?: mongoose.Types.ObjectId[];
     quizResponses?: mongoose.Types.ObjectId[];
     createdAt: Date;
+    scores: number[];
 }
 export declare const UsersSchema: mongoose.Schema<User, mongoose.Model<User, any, any, any, mongoose.Document<unknown, any, User> & User & {
     _id: mongoose.Types.ObjectId;

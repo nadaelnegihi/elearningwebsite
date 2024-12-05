@@ -17,7 +17,7 @@ let Module = class Module {
 exports.Module = Module;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
+    __metadata("design:type", mongoose_2.default.Types.ObjectId)
 ], Module.prototype, "courseId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
@@ -32,27 +32,25 @@ __decorate([
     __metadata("design:type", String)
 ], Module.prototype, "difficulty_level", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({
-        type: [{
-                contentType: { type: String, enum: ['video', 'pdf', 'image'], required: true },
-                resource: { type: String, required: true },
-            }],
-        default: [],
-    }),
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Resource' }], default: [] }),
     __metadata("design:type", Array)
 ], Module.prototype, "resources", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true, default: Date.now }),
-    __metadata("design:type", Date)
-], Module.prototype, "createdAt", void 0);
-__decorate([
     (0, mongoose_1.Prop)({
-        type: [{
+        type: [
+            {
                 title: String,
                 content: String,
-                hierarchy: [{ contentType: String, resource: String }],
+                resources: [
+                    {
+                        contentType: String,
+                        resource: String,
+                        date: { type: Date, required: true, default: Date.now },
+                    },
+                ],
                 updatedAt: { type: Date, default: Date.now },
-            }],
+            },
+        ],
         default: [],
     }),
     __metadata("design:type", Array)
@@ -65,8 +63,12 @@ __decorate([
     (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Quiz' }] }),
     __metadata("design:type", Array)
 ], Module.prototype, "quizzes", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Questionbank' }] }),
+    __metadata("design:type", Array)
+], Module.prototype, "questions", void 0);
 exports.Module = Module = __decorate([
-    (0, mongoose_1.Schema)()
+    (0, mongoose_1.Schema)({ timestamps: true })
 ], Module);
 exports.ModulesSchema = mongoose_1.SchemaFactory.createForClass(Module);
 //# sourceMappingURL=modules.schema.js.map

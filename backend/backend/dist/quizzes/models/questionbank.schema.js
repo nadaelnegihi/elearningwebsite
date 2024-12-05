@@ -18,6 +18,14 @@ exports.Questionbank = Questionbank;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
+], Questionbank.prototype, "questionId", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
+], Questionbank.prototype, "moduleId", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", String)
 ], Questionbank.prototype, "questionText", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
@@ -31,6 +39,10 @@ __decorate([
     (0, mongoose_1.Prop)({ type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' }),
     __metadata("design:type", String)
 ], Questionbank.prototype, "difficulty", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: String, enum: ['MCQ', 'True/False'], required: true }),
+    __metadata("design:type", String)
+], Questionbank.prototype, "questionTypes", void 0);
 exports.Questionbank = Questionbank = __decorate([
     (0, mongoose_1.Schema)()
 ], Questionbank);

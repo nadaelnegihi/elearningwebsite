@@ -1,26 +1,27 @@
 import mongoose, { HydratedDocument } from 'mongoose';
-export type ModuleDocument = HydratedDocument<Module>;
+export type ModuleDocument = HydratedDocument<Module> & {
+    createdAt: Date;
+    updatedAt: Date;
+};
 export declare class Module {
-    courseId: mongoose.Schema.Types.ObjectId;
+    courseId: mongoose.Types.ObjectId;
     title: string;
     content: string;
     difficulty_level: string;
-    resources: {
-        contentType: string;
-        resource: string;
-    }[];
-    createdAt: Date;
+    resources: mongoose.Types.ObjectId[];
     versions: Array<{
         title: string;
         content: string;
-        hierarchy: {
+        resources: {
             contentType: string;
             resource: string;
+            date: Date;
         }[];
         updatedAt: Date;
     }>;
     isOutdated: boolean;
     quizzes: mongoose.Types.ObjectId[];
+    questions: mongoose.Types.ObjectId[];
 }
 export declare const ModulesSchema: mongoose.Schema<Module, mongoose.Model<Module, any, any, any, mongoose.Document<unknown, any, Module> & Module & {
     _id: mongoose.Types.ObjectId;

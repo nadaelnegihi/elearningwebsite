@@ -1,7 +1,8 @@
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 export declare class Quiz extends Document {
+    quizId: string;
     moduleId: mongoose.Schema.Types.ObjectId;
-    questions: mongoose.Types.ObjectId[];
+    questions: string[];
     numberOfQuestions: number;
     questionTypes: string[];
     createdAt: Date;

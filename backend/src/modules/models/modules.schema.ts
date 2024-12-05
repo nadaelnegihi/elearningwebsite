@@ -1,54 +1,60 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, {HydratedDocument } from 'mongoose';
-export type ModuleDocument = HydratedDocument<Module>;
-@Schema()
+import mongoose, { HydratedDocument } from 'mongoose';
+
+export type ModuleDocument = HydratedDocument<Module> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+@Schema({ timestamps: true }) // Enable timestamps
 export class Module {
+  @Prop({ required: true })
+  courseId: mongoose.Types.ObjectId;
 
   @Prop({ required: true })
-  courseId: mongoose.Schema.Types.ObjectId; 
+  title: string;
 
   @Prop({ required: true })
-  title: string; 
-
-  @Prop({ required: true })
-  content: string; 
+  content: string;
 
   @Prop({ required: true, enum: ['Beginner', 'Intermediate', 'Advanced'] })
   difficulty_level: string;
 
-  @Prop({
-    type: [{
-      contentType: { type: String, enum: ['video', 'pdf', 'image'], required: true },
-      resource: { type: String, required: true }, 
-    }],
-    default: [],
-  })
-  resources: { contentType: string; resource: string }[]; 
-
-  @Prop({ required: true, default: Date.now })
-  createdAt: Date;  
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }], default: [] })
+  resources: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{
-      title: String,
-      content: String,
-      hierarchy: [{ contentType: String, resource: String }],
-      updatedAt: { type: Date, default: Date.now },
-    }],
+    type: [
+      {
+        title: String,
+        content: String,
+        resources: [
+          {
+            contentType: String,
+            resource: String,
+            date: { type: Date, required: true, default: Date.now },
+          },
+        ],
+        updatedAt: { type: Date, default: Date.now },
+      },
+    ],
     default: [],
   })
   versions: Array<{
     title: string;
     content: string;
-    hierarchy: { contentType: string; resource: string }[];
+    resources: { contentType: string; resource: string; date: Date }[];
     updatedAt: Date;
   }>;
 
   @Prop({ default: false })
   isOutdated: boolean;
-  
+
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' }] })
-  quizzes: mongoose.Types.ObjectId[]; 
+  quizzes: mongoose.Types.ObjectId[];
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Questionbank' }] })
+  questions: mongoose.Types.ObjectId[];
 }
 
 export const ModulesSchema = SchemaFactory.createForClass(Module);

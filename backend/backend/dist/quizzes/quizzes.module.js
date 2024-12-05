@@ -12,12 +12,14 @@ const quizzes_service_1 = require("./quizzes.service");
 const quizzes_controller_1 = require("./quizzes.controller");
 const mongoose_1 = require("@nestjs/mongoose");
 const quizzes_schema_1 = require("./models/quizzes.schema");
+const users_module_1 = require("../users/users.module");
+const questionbank_schema_1 = require("./models/questionbank.schema");
 let QuizzesModule = class QuizzesModule {
 };
 exports.QuizzesModule = QuizzesModule;
 exports.QuizzesModule = QuizzesModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: 'Question', schema: quizzes_schema_1.QuizzesSchema }])],
+        imports: [users_module_1.UsersModule, mongoose_1.MongooseModule.forFeature([{ name: 'Quiz', schema: quizzes_schema_1.QuizzesSchema }, { name: 'Questionbank', schema: questionbank_schema_1.QuestionbankSchema }])],
         providers: [quizzes_service_1.QuizzesService],
         controllers: [quizzes_controller_1.QuizzesController],
         exports: [quizzes_service_1.QuizzesService, mongoose_1.MongooseModule]

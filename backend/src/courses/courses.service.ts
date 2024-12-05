@@ -2,7 +2,7 @@ import { Course, CourseDocument } from './models/courses.schema';
 import { CreateCourseDto } from './dto/CreateCourseDto';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User, UserDocument, } from 'src/users/models/users.schema';
 import { UpdateCourseDto } from './dto/UpdateCourseDto';
 

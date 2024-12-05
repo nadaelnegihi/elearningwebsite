@@ -1,9 +1,12 @@
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 export declare class Questionbank extends Document {
+    questionId: string;
+    moduleId: mongoose.Schema.Types.ObjectId;
     questionText: string;
     options: string[];
     correctAnswer: string;
     difficulty: 'easy' | 'medium' | 'hard';
+    questionTypes: string;
 }
 export type QuestionDocument = HydratedDocument<Questionbank>;
 export declare const QuestionbankSchema: mongoose.Schema<Questionbank, mongoose.Model<Questionbank, any, any, any, mongoose.Document<unknown, any, Questionbank> & Questionbank & Required<{

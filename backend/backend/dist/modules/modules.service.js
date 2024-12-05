@@ -17,13 +17,17 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const modules_schema_1 = require("./models/modules.schema");
+const resourses_schema_1 = require("./models/resourses.schema");
 const courses_schema_1 = require("../courses/models/courses.schema");
 const users_schema_1 = require("../users/models/users.schema");
+const progress_schema_1 = require("../progress/models/progress.schema");
 let ModulesService = class ModulesService {
-    constructor(moduleModel, courseModel, userModel) {
+    constructor(moduleModel, resourceModel, courseModel, userModel, progressModel) {
         this.moduleModel = moduleModel;
+        this.resourceModel = resourceModel;
         this.courseModel = courseModel;
         this.userModel = userModel;
+        this.progressModel = progressModel;
     }
     async createModule(createModuleDto) {
         const { courseId, ...moduleData } = createModuleDto;
@@ -37,17 +41,65 @@ let ModulesService = class ModulesService {
         await course.save();
         return savedModule;
     }
-    async addMediaToModule(moduleid, filePath, contentType) {
-        const module = await this.moduleModel.findById(moduleid);
+    async addMediaToModule(moduleId, filePath, contentType, title) {
+        const module = await this.moduleModel.findById(moduleId);
         if (!module) {
             throw new Error('Module not found');
         }
-        module.resources.push({
-            contentType: contentType,
-            resource: filePath,
+        const newResource = new this.resourceModel({
+            title,
+            contentType,
+            resourcePath: filePath,
+            moduleId,
+            completed: false,
         });
+        const savedResource = await newResource.save();
+        module.resources.push(savedResource._id);
         await module.save();
         return module;
+    }
+    async getResourcePath(resourceId) {
+        const resource = await this.resourceModel.findById(resourceId).exec();
+        if (!resource) {
+            throw new Error('Resource not found.');
+        }
+        return resource.resourcePath;
+    }
+    async markResourceAsComplete(resourceId, studentId) {
+        const resource = await this.resourceModel.findById(resourceId).exec();
+        if (!resource) {
+            throw new Error('Resource not found.');
+        }
+        if (!resource.completed) {
+            resource.completed = true;
+            await resource.save();
+        }
+        const progress = await this.progressModel.findOne({
+            courseId: resource.moduleId,
+            userId: studentId,
+        });
+        if (!progress) {
+            const newProgress = new this.progressModel({
+                courseId: resource.moduleId,
+                userId: studentId,
+                completedModules: [resourceId],
+                completionPercentage: 0,
+                lastAccessed: new Date(),
+            });
+            await newProgress.save();
+        }
+        else {
+            if (!progress.completedModules.includes(resourceId)) {
+                progress.completedModules.push(resourceId);
+                const totalModules = await this.moduleModel.countDocuments({
+                    courseId: progress.courseId,
+                });
+                progress.completionPercentage =
+                    (progress.completedModules.length / totalModules) * 100;
+                progress.lastAccessed = new Date();
+                await progress.save();
+            }
+        }
     }
     async getModulesForStudents(courseId, studentId) {
         const student = await this.userModel.findById(studentId);
@@ -55,11 +107,18 @@ let ModulesService = class ModulesService {
             throw new Error('Student not found');
         }
         const studentLevel = student.level;
-        return this.moduleModel.find({
+        const modules = await this.moduleModel
+            .find({
             courseId,
             isOutdated: false,
             difficulty_level: { $in: this.getAccessibleLevels(studentLevel) },
-        }).exec();
+        })
+            .populate({
+            path: 'resources',
+            options: { sort: { date: 1 } },
+        })
+            .exec();
+        return modules;
     }
     getAccessibleLevels(level) {
         switch (level) {
@@ -74,28 +133,71 @@ let ModulesService = class ModulesService {
         }
     }
     async getModulesForInstructors(courseId) {
-        return this.moduleModel.find({ courseId }).exec();
+        const modules = await this.moduleModel
+            .find({ courseId })
+            .populate({
+            path: 'resources',
+            options: { sort: { date: 1 } },
+        })
+            .exec();
+        return modules;
     }
     async updateModule(moduleId, updateModuleDto) {
-        const module = await this.moduleModel.findById(moduleId);
+        const module = await this.moduleModel
+            .findById(moduleId)
+            .populate('resources')
+            .exec();
         if (!module) {
             throw new Error('Module not found');
         }
+        const resourcesDetails = await this.resourceModel
+            .find({ moduleId: moduleId })
+            .exec();
+        module.versions.push({
+            title: module.title,
+            content: module.content,
+            resources: resourcesDetails.map(resource => ({
+                contentType: resource.contentType,
+                resource: resource.resourcePath,
+                date: resource.createdAt,
+            })),
+            updatedAt: module.updatedAt || new Date(),
+        });
         module.isOutdated = true;
         await module.save();
-        const newModule = new this.moduleModel({
+        const updatedModule = new this.moduleModel({
+            ...module.toObject(),
             ...updateModuleDto,
+            isOutdated: false,
             updatedAt: new Date(),
+            _id: undefined,
+            versions: module.versions,
+            resources: module.resources.map(res => res._id),
         });
-        return newModule.save();
+        return updatedModule.save();
+    }
+    async getModuleById(moduleId) {
+        const module = await this.moduleModel
+            .findById(moduleId)
+            .populate({
+            path: 'resources',
+            options: { sort: { date: 1 } },
+        })
+            .exec();
+        if (!module) {
+            throw new Error('Module not found');
+        }
+        return module;
     }
 };
 exports.ModulesService = ModulesService;
 exports.ModulesService = ModulesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(modules_schema_1.Module.name)),
-    __param(1, (0, mongoose_1.InjectModel)(courses_schema_1.Course.name)),
-    __param(2, (0, mongoose_1.InjectModel)(users_schema_1.User.name)),
-    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
+    __param(1, (0, mongoose_1.InjectModel)(resourses_schema_1.Resource.name)),
+    __param(2, (0, mongoose_1.InjectModel)(courses_schema_1.Course.name)),
+    __param(3, (0, mongoose_1.InjectModel)(users_schema_1.User.name)),
+    __param(4, (0, mongoose_1.InjectModel)(progress_schema_1.Progress.name)),
+    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
 ], ModulesService);
 //# sourceMappingURL=modules.service.js.map

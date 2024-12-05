@@ -18,23 +18,23 @@ exports.Progress = Progress;
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
-], Progress.prototype, "progressId", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
 ], Progress.prototype, "userId", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", mongoose_2.default.Schema.Types.ObjectId)
 ], Progress.prototype, "courseId", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)({ required: true, default: 0 }),
     __metadata("design:type", Number)
 ], Progress.prototype, "completionPercentage", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true, default: Date.now }),
     __metadata("design:type", Date)
 ], Progress.prototype, "lastAccessed", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'Module' }], default: [] }),
+    __metadata("design:type", Array)
+], Progress.prototype, "completedModules", void 0);
 exports.Progress = Progress = __decorate([
     (0, mongoose_1.Schema)()
 ], Progress);

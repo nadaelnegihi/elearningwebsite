@@ -21,7 +21,9 @@ export class User {
   })
   role: string;
 
-  @Prop({ required: true, enum: ['Below Average', 'Average', 'Above Average'], default:'Below Average'})
+  @Prop({  enum: ['Below Average', 'Average', 'Above Average'], default:'Below Average', required: function () {
+    return this.role === 'student'; // Only for students
+  }})
   level: string;
 
   @Prop({
@@ -54,6 +56,10 @@ export class User {
   @Prop({ default: Date.now })
   createdAt: Date;
 
+  @Prop({ type:[Number],required: function () {
+    return this.role === 'student'; // Only for students
+  } })
+  scores: number[];
  
 }
 

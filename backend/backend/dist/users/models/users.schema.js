@@ -36,7 +36,9 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true, enum: ['Below Average', 'Average', 'Above Average'], default: 'Below Average' }),
+    (0, mongoose_1.Prop)({ enum: ['Below Average', 'Average', 'Above Average'], default: 'Below Average', required: function () {
+            return this.role === 'student';
+        } }),
     __metadata("design:type", String)
 ], User.prototype, "level", void 0);
 __decorate([
@@ -70,6 +72,12 @@ __decorate([
     (0, mongoose_1.Prop)({ default: Date.now }),
     __metadata("design:type", Date)
 ], User.prototype, "createdAt", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [Number], required: function () {
+            return this.role === 'student';
+        } }),
+    __metadata("design:type", Array)
+], User.prototype, "scores", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)()
 ], User);
