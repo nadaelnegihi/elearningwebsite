@@ -1,6 +1,8 @@
 export class CreateQuestionDto {
-    questionText: string;
-    options: string[];
-    correctAnswer: string;
-    difficulty: 'easy' | 'medium' | 'hard';
-  }
+  questionId :string; 
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  questionTypes:'MCQ'|'True/False';
+}

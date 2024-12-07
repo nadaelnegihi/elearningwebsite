@@ -5,6 +5,12 @@ import mongoose, { Document, HydratedDocument } from 'mongoose';
 @Schema()
 export class Questionbank extends Document {
   @Prop({ required: true })
+  questionId :string; 
+
+  @Prop({ required: true })
+  moduleId: mongoose.Schema.Types.ObjectId; 
+
+  @Prop({ required: true })
   questionText: string;
 
   @Prop({ required: true })
@@ -15,6 +21,9 @@ export class Questionbank extends Document {
 
   @Prop({ type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' })
   difficulty: 'easy' | 'medium' | 'hard'; 
+
+  @Prop({ type: String, enum: ['MCQ', 'True/False'], required: true })
+  questionTypes: string;
 }
 
 export type QuestionDocument = HydratedDocument<Questionbank>;

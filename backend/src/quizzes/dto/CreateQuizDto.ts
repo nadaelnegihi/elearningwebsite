@@ -1,5 +1,7 @@
 export class CreateQuizDto {
-    studentId: string;
-    courseId: string;
-  }
-  
+  moduleId: string;
+  createdBy: string;
+  numQuestions: number;
+  questionTypes: 'MCQ'| 'True/False'| 'Both';
+  studentId: string;
+}
