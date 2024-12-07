@@ -19,13 +19,15 @@ const progress_module_1 = require("./progress/progress.module");
 const quizzes_module_1 = require("./quizzes/quizzes.module");
 const responses_module_1 = require("./responses/responses.module");
 const mongoose_1 = require("@nestjs/mongoose");
+const chats_module_1 = require("./chats/chats.module");
+const forums_module_1 = require("./forums/forums.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [users_module_1.UsersModule, courses_module_1.CoursesModule, modules_module_1.ModulesModule, auth_module_1.AuthModule, notes_module_1.NotesModule,
-            progress_module_1.ProgressModule, quizzes_module_1.QuizzesModule, responses_module_1.ResponsesModule, mongoose_1.MongooseModule.forRoot('mongodb://localhost:27017/elearningweb')],
+            progress_module_1.ProgressModule, quizzes_module_1.QuizzesModule, responses_module_1.ResponsesModule, mongoose_1.MongooseModule.forRoot('mongodb://localhost:27017/elearningweb'), chats_module_1.ChatsModule, forums_module_1.ForumsModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

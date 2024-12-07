@@ -1,6 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-
+import { User,UserDocument } from 'src/users/models/users.schema';
 /**
 * Checks if the user has access to requested endpoint
 * @param req - Express Request Object
