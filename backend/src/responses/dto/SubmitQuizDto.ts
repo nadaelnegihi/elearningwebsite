@@ -5,4 +5,3 @@ export class SubmitQuizDto {
     quizId: mongoose.Schema.Types.ObjectId;
     answers: { questionId: string; selectedAnswer: string }[];
   }
-  

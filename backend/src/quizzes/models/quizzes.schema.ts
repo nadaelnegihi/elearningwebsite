@@ -27,3 +27,4 @@ export class Quiz extends Document {
 
 export type QuizDocument = HydratedDocument<Quiz>;
 export const QuizzesSchema = SchemaFactory.createForClass(Quiz);
+
