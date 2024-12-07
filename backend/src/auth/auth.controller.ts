@@ -54,7 +54,7 @@ export class AuthController {
           data: result,
         };
       } catch (error) {
-        // Handle specific errors, such as email already exists or validation errors
+        console.error('Error during signup:', error);
         if (error.status === 409) {
           throw new HttpException(
             {

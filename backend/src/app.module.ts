@@ -16,6 +16,6 @@ import { ForumsModule } from './forums/forums.module';
   imports: [UsersModule, CoursesModule, ModulesModule,AuthModule,NotesModule,
     ProgressModule,QuizzesModule,ResponsesModule,MongooseModule.forRoot('mongodb://localhost:27017/elearningweb'), ChatsModule, ForumsModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, BackupService, BackupDbService],
 })
-export class AppModule {}
+export class AppModule { }

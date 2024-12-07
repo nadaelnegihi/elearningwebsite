@@ -21,14 +21,18 @@ export class User {
   })
   role: string;
 
-  @Prop({ required: true, enum: ['Below Average', 'Average', 'Above Average'], default:'Below Average'})
-  level: string;
+  @Prop({
+    enum: ['Below Average', 'Average', 'Above Average'],
+    required: false, // Required logic handled in pre-save hook
+  })
+  level?: string;
 
   @Prop({
-    type: [{ course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }, status: { type: String, enum: ['enrolled', 'completed'], default: 'enrolled' } }],
-    required: function () {
-      return this.role === 'student';
-    },
+    type: [{ 
+      course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }, 
+      status: { type: String, enum: ['enrolled', 'completed'], default: 'enrolled' } 
+    }],
+    required: false, // Required logic handled in pre-save hook
   })
   studentCourses?: {
     course: mongoose.Types.ObjectId;
@@ -37,24 +41,52 @@ export class User {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
-    required: function () {
-      return this.role === 'instructor'; // Only required if the role is instructor
-    },
+    required: false, // Required logic handled in pre-save hook
   })
   teachingCourses?: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }],
-    required: function () {
-      return this.role === 'student'; // Only for students
-    },
+    required: false, // Required logic handled in pre-save hook
   })
   quizResponses?: mongoose.Types.ObjectId[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
 
- 
+  @Prop({
+    type: [Number],
+    required: false, // Required logic handled in pre-save hook
+  })
+  scores?: number[];
+
+  @Prop({
+    type: [Number],
+    default: [],
+    required: false, // Required logic handled in pre-save hook
+  })
+  ratings?: number[];
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);
+
+// Pre-save hook to conditionally remove fields
+UsersSchema.pre<UserDocument>('save', function (next) {
+  if (this.role === 'student') {
+    this.teachingCourses = undefined;
+    this.ratings = undefined;
+  } else if (this.role === 'instructor') {
+    this.level = undefined;
+    this.studentCourses = undefined;
+    this.quizResponses = undefined;
+    this.scores = undefined;
+  } else if (this.role === 'admin') {
+    this.level = undefined;
+    this.studentCourses = undefined;
+    this.quizResponses = undefined;
+    this.scores = undefined;
+    this.teachingCourses = undefined;
+    this.ratings = undefined;
+  }
+  next();
+});

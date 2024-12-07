@@ -5,9 +5,36 @@ import { Role } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto/CreateQuizDto';
+import { CreateQuestionDto } from './dto/CreateQuestionDto';
+import { QuestionDocument,Questionbank } from './models/questionbank.schema';
 @Controller('quizzes')
 export class QuizzesController {  
-    constructor(private readonly quizService: QuizzesService) {}
+    constructor(private quizService: QuizzesService) {}
 
+    @UseGuards(AuthGuard, authorizationGuard)
+    @Roles(Role.Student,Role.Instructor)
+    @Post('questions')
+    async createQuestion(@Body() createQuestionDto: CreateQuestionDto): Promise<Questionbank> {
+      return this.quizService.createQuestion(createQuestionDto);
+    }
+    @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Instructor)
+  @Post('create')
+  async createQuiz(@Body() createQuizDto: CreateQuizDto) {
+    return this.quizService.createQuiz(createQuizDto);
+  }
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
+  @Get()
+  async getAllQuizzes() {
+      return this.quizService.getAllQuizzes();
+  }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
+  @Get(':quizId')
+  async getQuizById(@Param('quizId') quizId: string) {
+      return this.quizService.getQuizById(quizId);
+  }
 }
+

@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
         const token = this.extractTokenFromHeader(request);
         if (!token) {
             throw new UnauthorizedException('No token, please login');
-        }
+        }  
         try {
             const payload = await this.jwtService.verifyAsync(
                 token,
@@ -38,14 +38,14 @@ export class AuthGuard implements CanActivate {
             );
             // 💡 We're assigning the payload to the request object here
             // so that we can access it in our route handlers
-            request['user'] = payload;
-        } catch {
+            request['user'] = payload.user;
+        } catch(e) {
             throw new UnauthorizedException('invalid token');
         }
         return true;
     }
     private extractTokenFromHeader(request: Request): string | undefined {
-        const token = request.cookies?.token || request.headers['authorization']?.split(' ')[1];
+        const token = request.headers["cookie"]?.split("token=")[1] || request.headers['authorization']?.split(' ')[1];        
 
         return token;
     }

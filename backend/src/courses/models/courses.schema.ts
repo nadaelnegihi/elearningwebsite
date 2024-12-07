@@ -26,6 +26,9 @@ export class Course extends Document {
 
   @Prop({ required: true, default: Date.now })
   createdAt: Date;
+
+  @Prop({ type: [Number], default: [] }) 
+  ratings: number[];
 }
 
 export const CoursesSchema = SchemaFactory.createForClass(Course);

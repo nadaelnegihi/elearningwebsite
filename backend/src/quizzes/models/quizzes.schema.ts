@@ -4,12 +4,13 @@ import mongoose, { Document, HydratedDocument } from 'mongoose';
 // Quiz Schema
 @Schema()
 export class Quiz extends Document {
-
+  @Prop({ required: true })
+  quizId :string; 
   @Prop({ required: true })
   moduleId: mongoose.Schema.Types.ObjectId; 
 
-  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Question', required: true })
-  questions: mongoose.Types.ObjectId[]; // References to questions from the question bank
+  @Prop({ type: [String], ref: 'Question', required: true })
+  questions: string[]; // References to questions from the question bank
 
   @Prop({ type: Number, required: true })
   numberOfQuestions: number; 
@@ -26,3 +27,4 @@ export class Quiz extends Document {
 
 export type QuizDocument = HydratedDocument<Quiz>;
 export const QuizzesSchema = SchemaFactory.createForClass(Quiz);
+
