@@ -248,6 +248,19 @@ export class ModulesService {
   
     return module;
   }
+  async rateModule(
+    moduleId: mongoose.Types.ObjectId,
+    rating: number,
+  ): Promise<void> {
+    const module = await this.moduleModel.findById(moduleId);
+  
+    if (!module) {
+      throw new Error('Module not found');
+    }
+  
+    module.ratings.push(rating);
+    await module.save();
+  }
   
   
 }

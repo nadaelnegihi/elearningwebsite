@@ -7,5 +7,4 @@ export class RegisterRequestDto {
     email:string;
     password:string;
     role: Role;
-    createdAt: Date;
   }

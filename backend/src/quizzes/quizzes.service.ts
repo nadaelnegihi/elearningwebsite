@@ -12,8 +12,8 @@ import { UserDocument } from 'src/users/models/users.schema';
 export class QuizzesService {
   constructor( 
   @InjectModel(Questionbank.name) private  questionModel: mongoose.Model<QuestionDocument>,
-  @InjectModel(Quiz.name) private quizModel: Model<QuizDocument>,
-  @InjectModel(User.name) private userModel: Model<UserDocument>,
+  @InjectModel(Quiz.name) private quizModel: mongoose.Model<QuizDocument>,
+  @InjectModel(User.name) private userModel: mongoose.Model<UserDocument>,
 ) {} 
 async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Questionbank> {
   const newQuestion = new this.questionModel(createQuestionDto);
@@ -76,5 +76,15 @@ async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Questionbank
         return ['medium'];
     }
   }
-
+  async getAllQuizzes(): Promise<Quiz[]> {
+    return this.quizModel.find().exec(); // Retrieve all quizzes
+  }
+  
+  async getQuizById(quizId: string): Promise<Quiz> {
+    const quiz = await this.quizModel.findOne({ quizId }).exec();
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+    return quiz;
+  }
 }

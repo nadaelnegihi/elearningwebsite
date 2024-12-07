@@ -55,6 +55,9 @@ export class Module {
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Questionbank' }] })
   questions: mongoose.Types.ObjectId[];
+  
+  @Prop({ type: [Number], default: [] }) // Store individual ratings
+  ratings: number[];
 }
 
 export const ModulesSchema = SchemaFactory.createForClass(Module);

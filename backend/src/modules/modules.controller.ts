@@ -126,6 +126,20 @@ async getModuleById(
   return this.modulesService.getModuleById(moduleId);
 }
 
+@UseGuards(AuthGuard, authorizationGuard)
+@Roles(Role.Student)
+@Post(':moduleId/rate')
+async rateModule(
+  @Param('moduleId') moduleId: mongoose.Types.ObjectId,
+  @Body('rating') rating: number,
+): Promise<{ message: string }> {
+  if (rating < 1 || rating > 5) {
+    throw new Error('Rating must be between 1 and 5');
+  }
 
-    }
+  await this.modulesService.rateModule(moduleId, rating);
+  return { message: 'Module rated successfully' };
+}
+}
+    
 

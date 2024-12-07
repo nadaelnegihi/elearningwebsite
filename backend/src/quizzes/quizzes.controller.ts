@@ -23,5 +23,18 @@ export class QuizzesController {
   async createQuiz(@Body() createQuizDto: CreateQuizDto) {
     return this.quizService.createQuiz(createQuizDto);
   }
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
+  @Get()
+  async getAllQuizzes() {
+      return this.quizService.getAllQuizzes();
+  }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
+  @Get(':quizId')
+  async getQuizById(@Param('quizId') quizId: string) {
+      return this.quizService.getQuizById(quizId);
+  }
 }
+

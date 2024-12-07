@@ -91,5 +91,18 @@ export class CoursesService {
 
     return this.courseModel.find(searchConditions).exec();
   }
+  async rateCourse(
+    courseId: mongoose.Types.ObjectId,
+    rating: number,
+  ): Promise<void> {
+    const course = await this.courseModel.findById(courseId);
+  
+    if (!course) {
+      throw new Error('Course not found');
+    }
+  
+    course.ratings.push(rating);
+    await course.save();
+  }
   
 }

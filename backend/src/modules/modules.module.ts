@@ -13,7 +13,8 @@ import { ResourceSchema } from './models/resourses.schema';
   imports: [
     CoursesModule,
     UsersModule,
-    MongooseModule.forFeature([{ name: 'Module', schema: ModulesSchema }, { name: 'Resource', schema: ResourceSchema },]),
+    MongooseModule.forFeature([{ name: 'Module', schema: ModulesSchema }, 
+      { name: 'Resource', schema: ResourceSchema },]),
     forwardRef(() => ProgressModule), // Use forwardRef here
     MulterModule.register({
       dest: './uploads',
