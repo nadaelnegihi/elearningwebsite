@@ -61,6 +61,7 @@ export class ModulesController {
   }
   
   @UseGuards(AuthGuard)
+  @Roles(Role.Student)
 @Get(':moduleId/resources/:resourceId/download')
 async downloadResource(
   @Param('moduleId') moduleId: mongoose.Schema.Types.ObjectId, // Module ID (kept for validation, if needed)

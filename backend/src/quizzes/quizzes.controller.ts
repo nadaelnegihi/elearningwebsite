@@ -12,7 +12,7 @@ export class QuizzesController {
     constructor(private quizService: QuizzesService) {}
 
     @UseGuards(AuthGuard, authorizationGuard)
-    @Roles(Role.Student,Role.Instructor)
+    @Roles(Role.Instructor)
     @Post('questions')
     async createQuestion(@Body() createQuestionDto: CreateQuestionDto): Promise<Questionbank> {
       return this.quizService.createQuestion(createQuestionDto);

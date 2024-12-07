@@ -9,7 +9,7 @@ import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 export class ResponsesController {
   constructor(private readonly responsesService: ResponsesService) {}
   @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Student,Role.Instructor)
+  @Roles(Role.Student)
   @Post('submit')
   async submitQuiz(@Body() submitQuizDto: SubmitQuizDto): Promise<{ percentage: number; feedback: string }> {
     return this.responsesService.submitQuiz(submitQuizDto);

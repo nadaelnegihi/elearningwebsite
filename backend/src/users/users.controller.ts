@@ -23,7 +23,8 @@ export class UsersController {
     const userId = req.user._id; // Extract `userid` from the JWT
     return this.usersService.updateUser(userId, updateUserDto);
   }
-  @UseGuards(AuthGuard) // Ensure the user is authenticated
+  @UseGuards(AuthGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get('courses')
   async getUserCourses(@Req() req: any) {
     const userId = req.user._id; // Extract `userid` from the JWT
