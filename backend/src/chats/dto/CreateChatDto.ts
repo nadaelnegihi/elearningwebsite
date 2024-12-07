@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
-
+import mongoose from 'mongoose';
 export class CreateChatDto {
   @IsString()
   @IsNotEmpty()
@@ -11,5 +11,5 @@ export class CreateChatDto {
 
   @IsString()
   @IsOptional()
-  readonly recipientId?: string;  // Optional: for direct messages between users
+  readonly recipientId?: mongoose.Schema.Types.ObjectId;  // Optional: for direct messages between users
 }

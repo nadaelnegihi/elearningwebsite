@@ -16,8 +16,8 @@ export class ChatMessage {
   @Prop({ required: true, default: Date.now })
   timestamp: Date;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'ChatRoom' })
-  chatRoomId: mongoose.Schema.Types.ObjectId;
+  //@Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'ChatRoom' })
+  //chatRoomId: mongoose.Schema.Types.ObjectId;
 
   //@Prop({ default: false })
   //isRead: boolean;
