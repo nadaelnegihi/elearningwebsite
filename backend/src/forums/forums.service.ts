@@ -2,10 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ForumPost, ForumPostDocument } from './models/forums.schema';
-import { Comment, CommentDocument } from './models/comments.schema';
 import { User, UserDocument, } from 'src/users/models/users.schema';
 import { Thread, ThreadDocument } from './models/threads.schema';
-import { Reply, ReplyDocument } from './models/replies.schema';
 import { CreateForumPostDto } from './dto/CreateForumPost.dto';
 import { UpdateForumPostDto } from './dto/UpdateForumPost.dto';
 import { CreateCommentDto } from './dto/CreateComment.dto';
@@ -17,10 +15,8 @@ import { CreateReplyDto } from './dto/Reply.dto';
 export class ForumService {
   constructor(
     @InjectModel(ForumPost.name) private forumPostModel: Model<ForumPostDocument>,
-    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
     @InjectModel('User') private userModel: Model<UserDocument>,
     @InjectModel(Thread.name) private threadModel: Model<ThreadDocument>,
-    @InjectModel(Reply.name) private replyModel: Model<ReplyDocument>,
   ) {}
 
   async createPost(createForumPostDto: CreateForumPostDto): Promise<ForumPost> {
@@ -64,25 +60,46 @@ export class ForumService {
   
 
   // Comments Management
-  async createComment(postId: string, createCommentDto: CreateCommentDto): Promise<Comment> {
-    const newComment = new this.commentModel({ ...createCommentDto, postId });
-    return newComment.save();
+  async createComment(postId: string, createCommentDto: CreateCommentDto): Promise<ForumPost> {
+    const post = await this.forumPostModel.findById(postId).exec();
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+  
+    // Add the comment to the comments array
+    const comment = { content: createCommentDto.content, timestamp: new Date() };
+    post.comments.push(comment as any); // Adjust based on the structure of `comments`
+  
+    return post.save(); // Save the updated post
   }
-
-  async getComments(postId: string): Promise<Comment[]> {
-    return this.commentModel.find({ postId }).exec();
+  
+  async getComments(postId: string): Promise<any[]> {
+    const post = await this.forumPostModel.findById(postId, 'comments').exec(); // Only fetch comments
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+  
+    return post.comments; // Return the comments array
   }
+  
 
-  async updateComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
-    const updatedComment = await this.commentModel.findByIdAndUpdate(commentId, updateCommentDto, { new: true }).exec();
-    if (!updatedComment) {
+  async updateComment(commentId: string, updateCommentDto: UpdateCommentDto): Promise<any> {
+    const updatedPost = await this.forumPostModel.findOneAndUpdate(
+      { 'comments._id': commentId }, // Locate the post containing the comment
+      { $set: { 'comments.$': { ...updateCommentDto, _id: commentId } } }, // Update the matched comment
+      { new: true }
+    ).exec();
+  
+    if (!updatedPost) {
       throw new NotFoundException('Comment not found');
     }
-    return updatedComment;
+  
+    return updatedPost;
   }
+  
 
   async deleteComment(commentId: string): Promise<{ message: string }> {
-    const deletedComment = await this.commentModel.findByIdAndDelete(commentId).exec();
+    const deletedComment = await this.forumPostModel.findByIdAndDelete(commentId).exec();
     if (!deletedComment) {
       throw new NotFoundException('Comment not found');
     }
@@ -126,14 +143,31 @@ export class ForumService {
     return newThread.save();
   }
 
-  async addReply(createReplyDto: CreateReplyDto, userId: string): Promise<ReplyDocument> {
-    const reply = new this.replyModel({
-      ...createReplyDto,
+  async addReply(createReplyDto: CreateReplyDto, userId: string): Promise<ThreadDocument> {
+    // Create a new reply
+    const newReply = new this.threadModel({
+      content: createReplyDto.content,
       createdBy: userId,
+      threadId: createReplyDto.threadId,  // Make sure the threadId is passed with the reply
     });
-    return reply.save();
+  
+    // Save the reply to the database
+    const savedReply = await newReply.save();
+  
+    // Add the reply ObjectId to the existing thread's replies array
+    const updatedThread = await this.threadModel.findByIdAndUpdate(
+      createReplyDto.threadId, // Find the thread by threadId
+      { $push: { replies: savedReply._id } }, // Push the new reply's ObjectId to the replies array
+      { new: true } // Return the updated thread
+    ).exec();
+  
+    if (!updatedThread) {
+      throw new Error('Thread not found');
+    }
+  
+    return updatedThread;
   }
-
+  
   async searchThreads(query: string): Promise<ThreadDocument[]> {
     return this.threadModel
       .find({ title: { $regex: query, $options: 'i' } })

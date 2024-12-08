@@ -22,36 +22,50 @@ export class ForumController {
     return this.forumService.createPost(createForumPostDto);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get()
   async getAllPosts() {
     return this.forumService.getAllPosts();
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get(':id')
   async getPostById(@Param('id') id: string) {
     return this.forumService.getPostById(id);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Put(':id')
   async updatePost(@Param('id') id: string, @Body() updateForumPostDto: UpdateForumPostDto) {
     return this.forumService.updatePost(id, updateForumPostDto);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Post(':postId/comments')
   async createComment(@Param('postId') postId: string, @Body() createCommentDto: CreateCommentDto) {
     return this.forumService.createComment(postId, createCommentDto);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get(':postId/comments')
   async getComments(@Param('postId') postId: string) {
     return this.forumService.getComments(postId);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Put('comments/:commentId')
   async updateComment(@Param('commentId') commentId: string, @Body() updateCommentDto: UpdateCommentDto) {
     return this.forumService.updateComment(commentId, updateCommentDto);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get(':courseId/:forumId')
   async getForum(@Param('courseId') courseId: string, @Param('forumId') forumId: string, @Req() req: any) {
     const userId = req.user.id;
@@ -63,18 +77,24 @@ export class ForumController {
     return this.forumService.getForumById(forumId);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Post('threads')
   async createThread(@Body() createThreadDto: CreateThreadDto, @Req() req: any) {
     const userId = req.user.id;
     return this.forumService.createThread(createThreadDto, userId);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Post('threads/:threadId/replies')
   async addReply(@Param('threadId') threadId: string, @Body() createReplyDto: CreateReplyDto, @Req() req: any) {
     const userId = req.user.id;
     return this.forumService.addReply({ ...createReplyDto, threadId }, userId);
   }
 
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
   @Get('threads/search')
   async searchThreads(@Query('query') query: string) {
     return this.forumService.searchThreads(query);

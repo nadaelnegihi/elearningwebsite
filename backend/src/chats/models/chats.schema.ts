@@ -4,23 +4,20 @@ import mongoose from 'mongoose';
 
 @Schema()
 export class ChatMessage {
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   sender: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   receiver: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   content: string;
 
   @Prop({ required: true, default: Date.now })
   timestamp: Date;
 
-  //@Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'ChatRoom' })
-  //chatRoomId: mongoose.Schema.Types.ObjectId;
-
-  //@Prop({ default: false })
-  //isRead: boolean;
+  @Prop({ required: false })
+  conversationId: string;
 
   @Prop({ default: true }) 
   isActive: boolean;

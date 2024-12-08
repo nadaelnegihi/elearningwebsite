@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@nestjs/config": "^3.3.0",
     "@nestjs/platform-socket.io": "^10.4.13",
     "@nestjs/websockets": "^10.4.13",
+    "csv-writer": "^1.6.0",
     "mongoose": "^8.8.3"
   }
 }
