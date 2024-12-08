@@ -14,14 +14,31 @@ export class ForumPost {
   @Prop({ required: true, default: Date.now })
   timestamp: Date;
 
-  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  @Prop({ required: false, type: MongooseSchema.Types.ObjectId, ref: 'User' })
   author: MongooseSchema.Types.ObjectId; // Reference to the User who created the post
 
-  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Comment', default: [] })
-  comments: MongooseSchema.Types.ObjectId[]; // Array of comments associated with this post
+  @Prop({
+    type: [
+      {
+        content: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        author: { type: MongooseSchema.Types.ObjectId, ref: 'User' },
+      },
+    ],
+    default: [],
+  })
+  comments: {
+    content: string;
+    timestamp: Date;
+    author: MongooseSchema.Types.ObjectId;
+  }[]; // Embedded comments directly in the ForumPost document
 
   @Prop({ default: true })
   isActive: boolean; // To manage soft deletes or deactivation of posts
+
+  @Prop({ required: false, type: MongooseSchema.Types.ObjectId, ref: 'ForumPost' })
+  forumPost: MongooseSchema.Types.ObjectId; // Reference to the parent ForumPost
 }
 
 export const ForumPostSchema = SchemaFactory.createForClass(ForumPost);
+

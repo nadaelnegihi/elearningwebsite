@@ -1,5 +1,5 @@
 export class AddGroupChatMessageDto {
-    message: string;
+    content: string;
     groupId: string;
   }
   

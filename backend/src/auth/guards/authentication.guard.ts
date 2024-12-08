@@ -38,7 +38,11 @@ export class AuthGuard implements CanActivate {
             );
             // 💡 We're assigning the payload to the request object here
             // so that we can access it in our route handlers
-            request['user'] = payload.user;
+            const { userid, role } = payload.user;
+            request['user'] = { _id: userid, role };
+            console.log('Decoded JWT Payload:', request['user']);
+
+            
         } catch(e) {
             throw new UnauthorizedException('invalid token');
         }
