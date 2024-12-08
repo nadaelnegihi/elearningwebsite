@@ -38,7 +38,8 @@ export class ChatsGateway {
 
   @SubscribeMessage('sendGroupMessage')
 async handleSendGroupMessage(@MessageBody() payload: AddGroupChatMessageDto, @ConnectedSocket() client: Socket) {
-  const message = await this.chatsService.addMessageToGroup(payload, client.id);
+  const message = await this.chatsService.addMessageToGroup(payload, client.
+    id);
 
   // Broadcast the message to the group room
   this.server.to(payload.groupId).emit('newGroupMessage', message);
