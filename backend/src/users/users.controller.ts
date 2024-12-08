@@ -1,5 +1,5 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, Query, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User, UserDocument } from './models/users.schema';
 import { UpdateUserDto } from './dto/UpdateUser';
@@ -77,16 +77,18 @@ async deleteUser(@Param('id') userId: mongoose.Schema.Types.ObjectId): Promise<{
   return { message: 'User deleted successfully' };
 }
 @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Student)
-  @Post('enroll/:courseId')
-  async enrollInCourse(
-    @Req() req: any,
-    @Param('courseId') courseId: mongoose.Types.ObjectId,
-  ): Promise<{ message: string }> {
-    const userId = req.user.userid; // Extract user ID from the JWT
-    await this.usersService.enrollInCourse(userId, courseId);
-    return { message: 'Enrolled in course successfully' };
-  }
+@Roles(Role.Student)
+@Post('enroll/:courseId')
+async enrollInCourse(
+  @Req() req: any,
+  @Param('courseId') courseId: mongoose.Types.ObjectId,
+): Promise<{ message: string }> {
+  const userId = req.user._id; // Extract _id from JWT payload
+  console.log('User ID:', userId); // Log the user ID for debugging
+  await this.usersService.enrollInCourse(userId, courseId);
+  return { message: 'Enrolled in course successfully' };
+}
+
 }
 
 

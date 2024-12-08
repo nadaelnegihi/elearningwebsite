@@ -27,10 +27,10 @@ export class ModulesController {
   @Post('upload/:moduleId')
   @UseInterceptors(FileInterceptor('file'))
   async uploadMedia(
-    @Param('moduleId') moduleId: mongoose.Types.ObjectId, 
+    @Param('moduleId') moduleId: mongoose.Types.ObjectId,
     @UploadedFile() file: Express.Multer.File,
     @Body('contentType') contentType: string,
-    @Body('title') title: string, // Add a title field for the resource
+    @Body('title') title: string,
   ) {
     if (!file) {
       throw new Error('No file uploaded');
@@ -46,12 +46,12 @@ export class ModulesController {
       throw new Error('Title is required for the resource');
     }
   
-    // Call service method to add media to the module
+    // Process the uploaded file
     const updatedModule = await this.modulesService.addMediaToModule(
       moduleId,
-      file.path,
+      file.path, // Save the full file path (retaining original name and extension)
       contentType,
-      title, // Pass the title to the service
+      title,
     );
   
     return {
@@ -62,36 +62,40 @@ export class ModulesController {
   
   @UseGuards(AuthGuard)
   @Roles(Role.Student)
-@Get(':moduleId/resources/:resourceId/download')
-async downloadResource(
-  @Param('moduleId') moduleId: mongoose.Schema.Types.ObjectId, // Module ID (kept for validation, if needed)
-  @Param('resourceId') resourceId: mongoose.Schema.Types.ObjectId, // Resource ID
-  @Req() req: any, // Get user information from request
-  @Res() res: Response,
-): Promise<void> {
-  const studentId = req.user._id; // Authenticated student ID (if needed for additional logic)
-
-  // Mark the resource as completed
-  await this.modulesService.markResourceAsComplete(resourceId,studentId);
-
-  // Get the file path for the resource
-  const filePath = await this.modulesService.getResourcePath(resourceId);
-
-  if (!filePath) {
-    res.status(404).send({ message: 'Resource not found.' });
-    return;
-  }
-
-  // Send the file for download
-  res.download(filePath, (err) => {
-    if (err) {
-      res.status(500).send({ message: 'Error downloading the file.' });
+  @Get(':moduleId/resources/:resourceId/download')
+  async downloadResource(
+    @Param('moduleId') moduleId: mongoose.Schema.Types.ObjectId,
+    @Param('resourceId') resourceId: mongoose.Types.ObjectId,
+    @Req() req: any,
+    @Res() res: Response,
+  ): Promise<void> {
+    const studentId = req.user._id;
+  
+    // Mark the resource as completed
+    await this.modulesService.markResourceAsComplete(resourceId, studentId);
+  
+    // Get the file path for the resource
+    const filePath = await this.modulesService.getResourcePath(resourceId);
+  
+    if (!filePath) {
+      res.status(404).send({ message: 'Resource not found.' });
+      return;
     }
-  });
-}
+  
+    // Set headers to prompt file download
+    res.setHeader('Content-Disposition', `attachment; filename=${filePath.split('/').pop()}`);
+    res.download(filePath, (err) => {
+      if (err) {
+        console.error('Error downloading file:', err);
+        res.status(500).send({ message: 'Error downloading the file.' });
+      }
+    });
+  }
+  
 
 
 @UseGuards(AuthGuard)
+@Roles(Role.Student)
 @Get('course/:courseId/student') // Removed studentId from URL
 async getModulesForStudents(
   @Param('courseId') courseId: mongoose.Schema.Types.ObjectId,
@@ -120,6 +124,7 @@ async updateModule(
   return this.modulesService.updateModule(moduleId, updateModuleDto);
 }
 @UseGuards(AuthGuard)
+@Roles(Role.Instructor,Role.Student)
 @Get(':moduleId')
 async getModuleById(
   @Param('moduleId') moduleId: mongoose.Types.ObjectId,

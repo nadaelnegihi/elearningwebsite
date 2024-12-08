@@ -28,9 +28,15 @@ export class UsersService {
     const user = await this.UserModel.findById(id).select("-password");  // Fetch a student by ID
     return user
   }
-  async updateUser(userId: mongoose.Schema.Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
-    return await this.UserModel.findByIdAndUpdate(userId, updateUserDto, { new: true });
+  async updateUser(userId: mongoose.Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
+    const user= await this.UserModel.findByIdAndUpdate(
+      userId,
+      { $set: updateUserDto }, // Apply updates
+      { new: true } // Return the updated document
+    ).exec();
+    return user
   }
+  
   async getUserCourses(userId: mongoose.Schema.Types.ObjectId): Promise<any> {
     const user = await this.UserModel.findById(userId)
       .populate('studentCourses.course')
@@ -43,7 +49,6 @@ export class UsersService {
 
     if (user.role === 'student') {
       return {
-        role: 'student',
         courses: user.studentCourses.map((courseStatus) => ({
           course: courseStatus.course,
           status: courseStatus.status, // enrolled or completed
@@ -51,7 +56,6 @@ export class UsersService {
       };
     } else if (user.role === 'instructor') {
       return {
-        role: 'instructor',
         courses: user.teachingCourses, // Courses being taught
       };
     }

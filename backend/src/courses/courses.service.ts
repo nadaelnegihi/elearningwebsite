@@ -13,22 +13,35 @@ export class CoursesService {
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
   ) {}
 
-  async createCourse(createCourseDto: CreateCourseDto, instructorName: string): Promise<CourseDocument> {
-    const newCourse = new this.courseModel({
-      ...createCourseDto,
-      created_by: instructorName, 
-    });
-    const savedCourse = await newCourse.save();
-    const courseId = savedCourse._id as mongoose.Types.ObjectId;
-    const instructor = await this.userModel.findOne({ name: instructorName, role: 'instructor' });
+  async createCourse(
+    createCourseDto: CreateCourseDto,
+    instructorId: mongoose.Types.ObjectId
+  ): Promise<CourseDocument> {
+    const instructor = await this.userModel.findOne({ _id: instructorId, role: 'instructor' });
     if (!instructor) {
       throw new Error('Instructor not found');
     }
+  
+    // Extract the instructor's name from the fetched instructor
+    const instructorName = instructor.name;
+  
+    // Create a new course and set the `created_by` field with the instructor's name
+    const newCourse = new this.courseModel({
+      ...createCourseDto,
+      created_by: instructorName,
+    });
+  
+    // Save the new course
+    const savedCourse = await newCourse.save();
+    const courseId = savedCourse._id as mongoose.Types.ObjectId;
+  
+    // Add the course ID to the instructor's teachingCourses array
     instructor.teachingCourses.push(courseId);
     await instructor.save();
-
+  
     return savedCourse;
   }
+  
   async getAllCourses(): Promise<CourseDocument[]> {
     return this.courseModel.find().exec();
   }

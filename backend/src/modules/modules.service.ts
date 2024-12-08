@@ -19,26 +19,32 @@ export class ModulesService {
     @InjectModel(Progress.name) private progressModel: mongoose.Model<ProgressDocument>, 
   ) {}
   async createModule(createModuleDto: CreateModuleDto): Promise<ModuleDocument> {
-    const { courseId, ...moduleData } = createModuleDto; // Extract the courseId from the DTO
-
-    const newModule = new this.moduleModel(moduleData);
+    const { courseId, ...moduleData } = createModuleDto; // Extract courseId and other data
+  
+    // Include courseId when creating the module
+    const newModule = new this.moduleModel({ courseId, ...moduleData });
+  
+    // Save the module
     const savedModule = await newModule.save();
-
+  
+    // Verify the course exists
     const course = await this.courseModel.findById(courseId);
-
     if (!course) {
       throw new Error('Course not found');
     }
-
+  
+    // Add the module to the course's modules array
     course.modules.push(savedModule._id);
     await course.save();
+  
     return savedModule;
   }
+  
   async addMediaToModule(
     moduleId: mongoose.Types.ObjectId,
     filePath: string,
     contentType: string,
-    title: string, // Add title for the resource
+    title: string,
   ): Promise<ModuleDocument> {
     // Retrieve the module by its ID
     const module = await this.moduleModel.findById(moduleId);
@@ -49,21 +55,22 @@ export class ModulesService {
   
     // Create a new resource document
     const newResource = new this.resourceModel({
-      title, // Resource title
-      contentType, // Resource type (video, pdf, etc.)
-      resourcePath: filePath, // File path or URL
-      moduleId, // Link the resource to the module
-      completed: false, // Initial completed flag
+      title,
+      contentType,
+      resourcePath: filePath, // Save the full file path
+      moduleId,
+      completed: false,
     });
   
-    const savedResource = await newResource.save(); 
-    module.resources.push(savedResource._id );
-    await module.save(); 
+    const savedResource = await newResource.save();
+    module.resources.push(savedResource._id);
+    await module.save();
   
     return module;
   }
   
-  async getResourcePath(resourceId: mongoose.Schema.Types.ObjectId): Promise<string | null> {
+  
+  async getResourcePath(resourceId: mongoose.Types.ObjectId): Promise<string | null> {
     // Fetch the resource by its ID
     const resource = await this.resourceModel.findById(resourceId).exec();
   
@@ -76,7 +83,7 @@ export class ModulesService {
   
   
   async markResourceAsComplete(
-    resourceId: mongoose.Schema.Types.ObjectId,
+    resourceId: mongoose.Types.ObjectId,
     studentId: mongoose.Types.ObjectId,
   ): Promise<void> {
     // Fetch the resource by its ID
@@ -175,15 +182,17 @@ export class ModulesService {
     courseId: mongoose.Schema.Types.ObjectId,
   ): Promise<ModuleDocument[]> {
     const modules = await this.moduleModel
-      .find({ courseId })
+      .find({ courseId }) // Fetch all modules for the course
       .populate({
         path: 'resources', // Populate the related resources
         options: { sort: { date: 1 } }, // Sort resources by date
       })
+      .select('-versions') // Exclude the 'versions' field
       .exec();
   
     return modules;
   }
+  
   
   async updateModule(
     moduleId: mongoose.Types.ObjectId, // Use consistent ObjectId type

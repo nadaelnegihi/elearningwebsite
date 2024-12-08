@@ -8,7 +8,7 @@ export type ModuleDocument = HydratedDocument<Module> & {
 
 @Schema({ timestamps: true }) // Enable timestamps
 export class Module {
-  @Prop({ required: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Course' })
   courseId: mongoose.Types.ObjectId;
 
   @Prop({ required: true })

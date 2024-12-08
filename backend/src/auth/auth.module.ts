@@ -1,23 +1,23 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
-import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ProgressModule } from 'src/progress/progress.module'; // Import ProgressModule
 import * as dotenv from 'dotenv';
-import { MongooseModule } from '@nestjs/mongoose';
 
 dotenv.config();
+
 @Module({
   controllers: [AuthController],
-  providers: [AuthService,UsersService],
-  imports:[
-    UsersModule, 
+  providers: [AuthService],
+  imports: [UsersModule,ProgressModule, // Add ProgressModule here
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
     }),
-  ]
+  ],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -7,6 +7,7 @@ import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto/CreateQuizDto';
 import { CreateQuestionDto } from './dto/CreateQuestionDto';
 import { QuestionDocument,Questionbank } from './models/questionbank.schema';
+import mongoose from 'mongoose';
 @Controller('quizzes')
 export class QuizzesController {  
     constructor(private quizService: QuizzesService) {}
@@ -18,11 +19,13 @@ export class QuizzesController {
       return this.quizService.createQuestion(createQuestionDto);
     }
     @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Instructor)
-  @Post('create')
-  async createQuiz(@Body() createQuizDto: CreateQuizDto) {
-    return this.quizService.createQuiz(createQuizDto);
-  }
+    @Roles(Role.Instructor)
+    @Post('create')
+    async createQuiz(@Body() createQuizDto: CreateQuizDto, @Req() req: any) {
+      const instructorId = req.user._id; // Extract the instructor's ID from the JWT
+      return this.quizService.createQuiz(createQuizDto, instructorId);
+    }
+    
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Instructor)
   @Get()
@@ -34,7 +37,9 @@ export class QuizzesController {
   @Roles(Role.Student, Role.Instructor)
   @Get(':quizId')
   async getQuizById(@Param('quizId') quizId: string) {
-      return this.quizService.getQuizById(quizId);
+    const objectId = new mongoose.Types.ObjectId(quizId); // Convert `quizId` to ObjectId
+    return this.quizService.getQuizById(objectId);
   }
+  
 }
 

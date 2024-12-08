@@ -4,10 +4,8 @@ import mongoose, { Document, HydratedDocument } from 'mongoose';
 // Quiz Schema
 @Schema()
 export class Quiz extends Document {
-  @Prop({ required: true })
-  quizId :string; 
-  @Prop({ required: true })
-  moduleId: mongoose.Schema.Types.ObjectId; 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true })
+  moduleId: mongoose.Types.ObjectId; 
 
   @Prop({ type: [String], ref: 'Question', required: true })
   questions: string[]; // References to questions from the question bank
@@ -15,14 +13,14 @@ export class Quiz extends Document {
   @Prop({ type: Number, required: true })
   numberOfQuestions: number; 
 
-  @Prop({ type: [String], enum: ['MCQ', 'True/False'], required: true })
+  @Prop({ type: [String], enum: ['MCQ', 'True/False','Both'], required: true })
   questionTypes: string[]; 
 
   @Prop({ default: Date.now })
   createdAt: Date; // Quiz creation timestamp
 
-  @Prop({ required: true })
-  createdBy: mongoose.Schema.Types.ObjectId; 
+  @Prop({ type: String, ref: 'User', required: true }) 
+  createdBy: string;
 }
 
 export type QuizDocument = HydratedDocument<Quiz>;

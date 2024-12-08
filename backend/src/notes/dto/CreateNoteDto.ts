@@ -1,8 +1,8 @@
 
-
+import mongoose from "mongoose";
 export class CreateNoteDto {
 
-  courseId?: string;
+  courseId?:  mongoose.Types.ObjectId;
 
   content: string; 
 }

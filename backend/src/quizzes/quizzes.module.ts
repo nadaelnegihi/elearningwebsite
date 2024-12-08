@@ -1,14 +1,20 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { QuizzesController } from './quizzes.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { QuizzesSchema } from './models/quizzes.schema';
+import { QuestionbankSchema } from './models/questionbank.schema';
 import { UsersModule } from 'src/users/users.module';
-import { QuestionbankSchema} from './models/questionbank.schema';
+
 @Module({
-  imports:[UsersModule,MongooseModule.forFeature([ { name: 'Quiz', schema: QuizzesSchema },{ name: 'Questionbank', schema: QuestionbankSchema }])],
+  imports: [forwardRef(()=>UsersModule) ,
+    MongooseModule.forFeature([
+      { name: 'Quiz', schema: QuizzesSchema },
+      { name: 'Questionbank', schema: QuestionbankSchema },
+    ]),
+  ],
   providers: [QuizzesService],
   controllers: [QuizzesController],
-  exports:[QuizzesService,MongooseModule]
+  exports: [QuizzesService, MongooseModule],
 })
 export class QuizzesModule {}

@@ -14,18 +14,22 @@ export class ResponsesService {
     @InjectModel(User.name) private userModel: mongoose.Model<UserDocument>, // Inject user model
   ) {}
 
-  async submitQuiz(submitQuizDto: SubmitQuizDto): Promise<{ percentage: number; feedback: string }> {
-    const { studentId, quizId, answers } = submitQuizDto;
-
+  async submitQuiz(
+    quizId: mongoose.Types.ObjectId,
+    submitQuizDto: Omit<SubmitQuizDto, 'quizId'>,
+  ): Promise<{ percentage: number; feedback: string }> {
+    const { studentId, answers } = submitQuizDto;
+  
     let score = 0;
     const feedback: string[] = [];
-
+  
     for (const { questionId, selectedAnswer } of answers) {
-      const question = await this.questionModel.findById(questionId);
+      // Query by `questionId` field, not `_id`
+      const question = await this.questionModel.findOne({ questionId }).exec();
       if (!question) {
         throw new NotFoundException(`Question with ID ${questionId} not found`);
       }
-
+  
       if (question.correctAnswer === selectedAnswer) {
         score += 1;
         feedback.push(`Question ${questionId}: Correct`);
@@ -35,33 +39,33 @@ export class ResponsesService {
         );
       }
     }
-
+  
     // Calculate percentage
     const totalQuestions = answers.length;
     const percentage = (score / totalQuestions) * 100;
-
+  
     // Store percentage score in user's scores array (only for students)
     const user = await this.userModel.findById(studentId);
     if (!user) {
       throw new NotFoundException(`User with ID ${studentId} not found`);
     }
-
+  
     if (user.role === 'student') {
       user.scores.push(percentage); // Store percentage score
       await user.save();
     }
-
+  
     // Real-time feedback based on performance
     const passingScore = totalQuestions * 0.5; // Assume 50% is passing
     const advice =
       score >= passingScore
         ? 'Well done! Keep progressing.'
         : 'You did not pass. Please review the module content and try again.';
-
+  
     return {
       percentage,
       feedback: `${feedback.join('\n')}\n\n${advice}`,
     };
   }
   
-}
+}  

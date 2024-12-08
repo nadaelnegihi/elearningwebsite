@@ -90,3 +90,25 @@ UsersSchema.pre<UserDocument>('save', function (next) {
   }
   next();
 });
+UsersSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    if (ret.role === 'student') {
+      delete ret.teachingCourses;
+      delete ret.ratings;
+    } else if (ret.role === 'instructor') {
+      delete ret.level;
+      delete ret.studentCourses;
+      delete ret.quizResponses;
+      delete ret.scores;
+    } else if (ret.role === 'admin') {
+      delete ret.level;
+      delete ret.studentCourses;
+      delete ret.quizResponses;
+      delete ret.scores;
+      delete ret.teachingCourses;
+      delete ret.ratings;
+    }
+    return ret;
+  },
+});
+

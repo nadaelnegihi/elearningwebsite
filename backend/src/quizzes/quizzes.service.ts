@@ -20,49 +20,68 @@ async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Questionbank
   return newQuestion.save();
 }
   // Method 1: Create a quiz and generate questions
-  async createQuiz(createQuizDto: CreateQuizDto) {
-    const { moduleId, numQuestions, questionTypes, createdBy, studentId } = createQuizDto;
-
+  async createQuiz(createQuizDto: CreateQuizDto, instructorId: mongoose.Types.ObjectId) {
+    const { moduleId, numberOfQuestions, questionTypes, studentId } = createQuizDto;
+  
+    // Handle "Both" by replacing it with ["MCQ", "True/False"]
+    const resolvedQuestionTypes =
+      questionTypes.includes("Both") ? ["MCQ", "True/False"] : questionTypes;
+  
+    // Fetch the instructor's name using their ID
+    const instructor = await this.userModel.findById(instructorId).exec();
+    if (!instructor) {
+      throw new Error('Invalid instructor');
+    }
+  
+    const createdBy = instructor.name;
+  
     // Step 1: Create quiz document
     const quiz = new this.quizModel({
       moduleId,
-      numQuestions,
-      questionTypes,
+      numberOfQuestions,
+      questionTypes: resolvedQuestionTypes, // Save resolved types
       createdBy,
       questions: [],
     });
     await quiz.save();
-
+  
     // Step 2: Generate questions and update the quiz
-    const updatedQuiz = await this.generateQuestions(studentId, quiz.quizId);
+    const updatedQuiz = await this.generateQuestions(studentId, quiz._id as mongoose.Types.ObjectId);
     return updatedQuiz;
   }
-
-  // Method 2: Generate questions based on student performance
-  async generateQuestions(studentId: string, quizId: string) {
+  
+  async generateQuestions(studentId: string, quizId: mongoose.Types.ObjectId) {
     const student = await this.userModel.findById(studentId);
     if (!student || student.role !== 'student') {
       throw new NotFoundException('Student not found');
     }
-
+  
     const quiz = await this.quizModel.findById(quizId);
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
-
-    const { level } = student; // Determine student's performance level
+  
+    const { level } = student;
     const difficulty = this.mapPerformanceToDifficulty(level);
-
+  
     const questions = await this.questionModel.aggregate([
-      { $match: { moduleId: quiz.moduleId, questionTypes: { $in: quiz.questionTypes }, difficulty: { $in: difficulty } } },
-      { $sample: { size: quiz.numberOfQuestions } }, // Randomly select questions
+      {
+        $match: {
+          moduleId: quiz.moduleId,
+          questionTypes: { $in: quiz.questionTypes }, // Handle combined types
+          difficulty: { $in: difficulty },
+        },
+      },
+      { $sample: { size: quiz.numberOfQuestions } },
     ]);
-
-    quiz.questions = questions.map((q) => q._id);
+  
+    quiz.questions = questions.map((q) => q.questionId);
     await quiz.save();
-
+  
     return quiz;
   }
+  
+  
 
   private mapPerformanceToDifficulty(level: string): string[] {
     switch (level) {
@@ -79,12 +98,12 @@ async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Questionbank
   async getAllQuizzes(): Promise<Quiz[]> {
     return this.quizModel.find().exec(); // Retrieve all quizzes
   }
-  
-  async getQuizById(quizId: string): Promise<Quiz> {
-    const quiz = await this.quizModel.findOne({ quizId }).exec();
+  async getQuizById(quizId: mongoose.Types.ObjectId): Promise<Quiz> {
+    const quiz = await this.quizModel.findById(quizId).exec(); // Use `findById` for `_id`
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
     return quiz;
   }
+  
 }

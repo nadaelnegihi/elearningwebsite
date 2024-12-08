@@ -8,16 +8,22 @@ import { CoursesModule } from 'src/courses/courses.module';
 import { UsersModule } from 'src/users/users.module';
 import { ProgressModule } from 'src/progress/progress.module';
 import { ResourceSchema } from './models/resourses.schema';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Module({
-  imports: [
-    CoursesModule,
-    UsersModule,
+  imports: [CoursesModule,
+    forwardRef(() => UsersModule),
     MongooseModule.forFeature([{ name: 'Module', schema: ModulesSchema }, 
-      { name: 'Resource', schema: ResourceSchema },]),
-    forwardRef(() => ProgressModule), // Use forwardRef here
+      { name: 'Resource', schema: ResourceSchema },]), forwardRef(() => ProgressModule),
     MulterModule.register({
-      dest: './uploads',
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${file.originalname}`;
+          cb(null, uniqueName);
+        },
+      }),
     }),
   ],
   providers: [ModulesService],

@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, HydratedDocument } from 'mongoose';
 export type ProgressDocument = HydratedDocument<Progress>;
-@Schema()
+@Schema({ collection: 'progresses' })
 export class Progress extends Document {
 
-  @Prop({ required: true })
-  userId: mongoose.Schema.Types.ObjectId;   
+  @Prop({  type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  userId: mongoose.Types.ObjectId;
 
-  @Prop({ required: true })
-  courseId: mongoose.Schema.Types.ObjectId;  
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Course' })
+  courseId: mongoose.Schema.Types.ObjectId; 
 
   @Prop({ required: true, default:0})
   completionPercentage: number;  
@@ -17,7 +17,7 @@ export class Progress extends Document {
   lastAccessed: Date;  
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Module' }], default: [] })
-  completedModules: mongoose.Schema.Types.ObjectId[];
+  completedModules: mongoose.Types.ObjectId[];
 
 }
 

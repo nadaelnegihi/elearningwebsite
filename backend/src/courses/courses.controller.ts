@@ -12,14 +12,24 @@ import mongoose from 'mongoose';
 @Controller('courses')
 export class CoursesController {
   constructor(private coursesService: CoursesService) { }
-
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Student, Role.Instructor)
+  @Get('search')
+  async searchCourses(
+    @Query('title') title: string,
+    @Query('category') category: string,
+    @Query('created_by') created_by: string,
+  ): Promise<Course[]> {
+    return this.coursesService.searchCourses({ title, category, created_by });
+  }
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Instructor)
   @Post()
   async createCourse(@Body() createCourseDto: CreateCourseDto, @Req() req: any) {
-    const instructorname = req.user.name
-    return this.coursesService.createCourse(createCourseDto, instructorname);
+    const instructorId = req.user._id;
+    return this.coursesService.createCourse(createCourseDto, instructorId);
   }
+  
 
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Admin)
@@ -55,16 +65,6 @@ export class CoursesController {
     return { message: 'Course deleted successfully' };
   }
 
-  @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Student, Role.Instructor)
-  @Get('search')
-  async searchCourses(
-    @Query('title') title: string,
-    @Query('category') category: string,
-    @Query('created_by') created_by: string
-  ): Promise<Course[]> {
-    return this.coursesService.searchCourses({ title, category, created_by });
-  }
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student)
   @Post(':courseId/rate')
