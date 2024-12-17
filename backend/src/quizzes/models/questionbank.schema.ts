@@ -24,6 +24,10 @@ export class Questionbank extends Document {
 
   @Prop({ type: String, enum: ['MCQ', 'True/False'], required: true })
   questionTypes: string;
+
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
+
 }
 
 export type QuestionDocument = HydratedDocument<Questionbank>;

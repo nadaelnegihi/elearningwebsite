@@ -17,14 +17,24 @@ export class ResponsesService {
   async submitQuiz(
     quizId: mongoose.Types.ObjectId,
     submitQuizDto: Omit<SubmitQuizDto, 'quizId'>,
-  ): Promise<{ percentage: number; feedback: string }> {
+  ): Promise<{
+    percentage: number;
+    feedback: string[];
+    detailedResults: { questionId: string; status: string; selectedAnswer: string; correctAnswer: string }[];
+  }> {
     const { studentId, answers } = submitQuizDto;
   
     let score = 0;
     const feedback: string[] = [];
+    const detailedResults: {
+      questionId: string;
+      status: string;
+      selectedAnswer: string;
+      correctAnswer: string;
+    }[] = [];
   
     for (const { questionId, selectedAnswer } of answers) {
-      // Query by `questionId` field, not `_id`
+      // Query by `questionId` field
       const question = await this.questionModel.findOne({ questionId }).exec();
       if (!question) {
         throw new NotFoundException(`Question with ID ${questionId} not found`);
@@ -33,10 +43,22 @@ export class ResponsesService {
       if (question.correctAnswer === selectedAnswer) {
         score += 1;
         feedback.push(`Question ${questionId}: Correct`);
+        detailedResults.push({
+          questionId,
+          status: 'Correct',
+          selectedAnswer,
+          correctAnswer: question.correctAnswer,
+        });
       } else {
         feedback.push(
           `Question ${questionId}: Incorrect. Review the module for this question's topic.`
         );
+        detailedResults.push({
+          questionId,
+          status: 'Incorrect',
+          selectedAnswer,
+          correctAnswer: question.correctAnswer,
+        });
       }
     }
   
@@ -44,28 +66,29 @@ export class ResponsesService {
     const totalQuestions = answers.length;
     const percentage = (score / totalQuestions) * 100;
   
-    // Store percentage score in user's scores array (only for students)
+    // Update user's scores array (only for students)
     const user = await this.userModel.findById(studentId);
     if (!user) {
       throw new NotFoundException(`User with ID ${studentId} not found`);
     }
   
     if (user.role === 'student') {
-      user.scores.push(percentage); // Store percentage score
+      user.scores.push(percentage); // Store the percentage score
       await user.save();
     }
   
-    // Real-time feedback based on performance
-    const passingScore = totalQuestions * 0.5; // Assume 50% is passing
+    // Generate overall advice
+    const passingScore = totalQuestions * 0.5; // 50% passing threshold
     const advice =
       score >= passingScore
         ? 'Well done! Keep progressing.'
         : 'You did not pass. Please review the module content and try again.';
   
+    // Return detailed results, percentage, and advice
     return {
       percentage,
-      feedback: `${feedback.join('\n')}\n\n${advice}`,
+      feedback: [...feedback, advice], // High-level feedback
+      detailedResults, // Detailed question feedback
     };
   }
-  
 }  

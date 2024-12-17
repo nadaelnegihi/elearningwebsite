@@ -9,15 +9,21 @@ import mongoose from 'mongoose';
 @Controller('responses')
 export class ResponsesController {
   constructor(private readonly responsesService: ResponsesService) {}
-  @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Student)
-  @Post(':quizId/submit')
-  async submitQuiz(
-    @Param('quizId') quizId: mongoose.Types.ObjectId, // Extract quizId from the URL
-    @Body() submitQuizDto: Omit<SubmitQuizDto, 'quizId'>, // Exclude quizId from the DTO
-  ): Promise<{ percentage: number; feedback: string }> {
-    return this.responsesService.submitQuiz(quizId, submitQuizDto); // Pass quizId separately
-  }
+  
+@UseGuards(AuthGuard, authorizationGuard)
+@Roles(Role.Student)
+@Post(':quizId/submit')
+async submitQuiz(
+  @Param('quizId') quizId: mongoose.Types.ObjectId, // Extract quizId from the URL
+  @Body() submitQuizDto: Omit<SubmitQuizDto, 'quizId'>, // Exclude quizId from the DTO
+): Promise<{
+  percentage: number;
+  feedback: string[];
+  detailedResults: { questionId: string; status: string; selectedAnswer: string; correctAnswer: string }[];
+}> {
+  return this.responsesService.submitQuiz(quizId, submitQuizDto);
+}
+
   
   
 }

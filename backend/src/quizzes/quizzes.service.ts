@@ -95,15 +95,42 @@ async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Questionbank
         return ['medium'];
     }
   }
-  async getAllQuizzes(): Promise<Quiz[]> {
-    return this.quizModel.find().exec(); // Retrieve all quizzes
+  async getQuizzesByModule(moduleId: mongoose.Types.ObjectId): Promise<Quiz[]> {
+    return this.quizModel.find({ moduleId, deleted: false }).exec();
   }
+  
+  
   async getQuizById(quizId: mongoose.Types.ObjectId): Promise<Quiz> {
     const quiz = await this.quizModel.findById(quizId).exec(); // Use `findById` for `_id`
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
     return quiz;
+  }
+  async updateQuestion(
+    questionId: string,
+    updateData: Partial<CreateQuestionDto>
+  ): Promise<Questionbank> {
+    const question = await this.questionModel.findByIdAndUpdate(
+      questionId,
+      { $set: updateData },
+      { new: true } // Return the updated question
+    );
+  
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    return question;
+  }
+  
+  async deleteQuestion(questionId: string): Promise<void> {
+    const question = await this.questionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+  
+    // Soft delete: Add a `deleted` flag instead of actual deletion
+    await this.questionModel.findByIdAndUpdate(questionId, { $set: { deleted: true } });
   }
   
 }

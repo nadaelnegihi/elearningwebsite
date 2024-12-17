@@ -11,19 +11,20 @@ import mongoose from 'mongoose';
 export class UsersController {
   constructor(private usersService: UsersService) { }
 
-  @UseGuards(AuthGuard) // Ensure the user is authenticated
+  @UseGuards(AuthGuard, authorizationGuard)
   @Get('profile')
   async getProfile(@Req() req: any) {
     const userId = req.user.userid; // Extract `userid` from the JWT
     return this.usersService.findById(userId);
   }
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, authorizationGuard)
   @Put('profile')
+  @Roles(Role.Instructor, Role.Student)
   async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
     const userId = req.user._id; // Extract `userid` from the JWT
     return this.usersService.updateUser(userId, updateUserDto);
   }
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Instructor)
   @Get('courses')
   async getUserCourses(@Req() req: any) {
