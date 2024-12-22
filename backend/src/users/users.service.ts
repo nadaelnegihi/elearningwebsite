@@ -23,7 +23,7 @@ export class UsersService {
     const user = await this.UserModel.findOne({ email })
     return user;  // Fetch a student by username
   }
-  async findById(id: mongoose.Schema.Types.ObjectId): Promise<UserDocument> {
+  async findById(id: mongoose.Types.ObjectId): Promise<UserDocument> {
     console.log("Searching user by ID:", id); // Log the ID being searched
     const user = await this.UserModel.findById(id).select("-password");  // Fetch a student by ID
     return user;

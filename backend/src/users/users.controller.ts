@@ -1,5 +1,5 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, Query, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards, Query, Patch ,BadRequestException} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User, UserDocument } from './models/users.schema';
 import { UpdateUserDto } from './dto/UpdateUser';
@@ -7,26 +7,10 @@ import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { Role, Roles } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
 import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) { }
-
-  @UseGuards(AuthGuard)
-@Get('profile')
-async getProfile(@Req() req: any) {
-  console.log("Decoded JWT Payload:", req.user); // Debug the decoded JWT payload
-  const userId = req.user._id; // Extract `_id` from the JWT
-  return this.usersService.findById(userId);
-}
-
-  
-  @UseGuards(AuthGuard)
-  @Put('profile')
-  @Roles(Role.Instructor, Role.Student)
-  async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
-    const userId = req.user._id; // Extract `userid` from the JWT
-    return this.usersService.updateUser(userId, updateUserDto);
-  }
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Instructor)
   @Get('courses')
@@ -51,6 +35,33 @@ async getProfile(@Req() req: any) {
     @Query('query') query: string,
   ): Promise<UserDocument[]> {
     return this.usersService.searchInstructors(query);
+  }
+  @UseGuards(AuthGuard)
+@Get('profile')
+async getProfile(@Req() req: any) {
+  console.log("Decoded JWT Payload:", req.user); // Debug the decoded JWT payload
+  const userId = req.user._id; // Extract `_id` from the JWT
+  return this.usersService.findById(userId);
+}
+@UseGuards(AuthGuard)
+@Get(':userId')
+async getUser(@Param('userId') userId: string) {
+  console.log("Received userId:", userId); // Debugging
+
+  // Validate that userId is a valid ObjectId
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new BadRequestException(`Invalid user ID: ${userId}`);
+  }
+
+  // Convert userId to ObjectId and fetch the user
+  return this.usersService.findById(new Types.ObjectId(userId));
+}
+  @UseGuards(AuthGuard)
+  @Put('profile')
+  @Roles(Role.Instructor, Role.Student)
+  async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user._id; // Extract `userid` from the JWT
+    return this.usersService.updateUser(userId, updateUserDto);
   }
   
   @UseGuards(AuthGuard, authorizationGuard)

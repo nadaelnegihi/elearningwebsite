@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/app/lib/axiosInstance";
 
 interface SearchResult {
@@ -13,6 +13,7 @@ interface SearchResult {
 
 export default function SearchResultsPage() {
   const searchParams = useSearchParams();
+  const router = useRouter(); // Use Next.js router
   const query = searchParams.get("query") || "";
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -37,16 +38,16 @@ export default function SearchResultsPage() {
     const fetchResults = async () => {
       if (!query) return;
       setIsLoading(true);
-
+  
       try {
         const requests = [];
-
+  
         if (userRole === "student") {
           requests.push(
-            axiosInstance.get("/courses/search",{ params: { query } })
+            axiosInstance.get("/courses/search", { params: { query } })
           );
           requests.push(
-            axiosInstance.get("/users/instructors-search", { params: { query },})
+            axiosInstance.get("/users/instructors-search", { params: { query } })
           );
         } else if (userRole === "instructor") {
           requests.push(
@@ -57,64 +58,84 @@ export default function SearchResultsPage() {
           );
         } else if (userRole === "admin") {
           requests.push(
-            axiosInstance.get("/courses/search",{ params: { query } })
+            axiosInstance.get("/courses/search", { params: { query } })
           );
           requests.push(
             axiosInstance.get("/users/search-students", { params: { query } })
           );
           requests.push(
-            axiosInstance.get("/users/instructors-search", {
-              params: { query },
-            })
+            axiosInstance.get("/users/instructors-search", { params: { query } })
           );
         }
-
-        const responses = await Promise.all(requests);
-
+  
+        const responses = await Promise.all(
+          requests.map((req) =>
+            req.catch((err) => {
+              console.error("Request failed:", err.message);
+              return null; // Return null for failed requests
+            })
+          )
+        );
+  
+        // Log all responses to identify issues
+        console.log("API Responses:", responses);
+  
         const courses =
-          responses[0]?.data.map((course: any) => ({
+          responses[0]?.data?.map((course: any) => ({
             id: course._id,
             name: course.title,
             role: "Course",
           })) || [];
-
+  
         const students =
           responses.length > 1 && userRole !== "student"
-            ? responses[1]?.data.map((student: any) => ({
+            ? responses[1]?.data?.map((student: any) => ({
                 id: student._id,
                 name: student.name,
                 email: student.email,
                 role: "Student",
               }))
             : [];
-
+  
         const instructors =
           responses.length > 1 && userRole === "student"
-            ? responses[1]?.data.map((instructor: any) => ({
+            ? responses[1]?.data?.map((instructor: any) => ({
                 id: instructor._id,
                 name: instructor.name,
                 email: instructor.email,
                 role: "Instructor",
               }))
             : responses.length > 2
-            ? responses[2]?.data.map((instructor: any) => ({
+            ? responses[2]?.data?.map((instructor: any) => ({
                 id: instructor._id,
                 name: instructor.name,
                 email: instructor.email,
                 role: "Instructor",
               }))
             : [];
-
+  
         setResults([...courses, ...students, ...instructors]);
       } catch (error: any) {
-        console.error("Error fetching search results:", error);
+        console.error("Unexpected error fetching results:", error.message);
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchResults();
   }, [query, userRole]);
+  
+
+  // Navigate to details page
+  const handleResultClick = (id: string, role: string) => {
+    console.log("Navigating to:", id, "Role:", role); // Log the clicked result
+    if (role === "Course") {
+      router.push(`/courses/${id}`);
+    } else if (role === "Instructor" || role === "Student") {
+      router.push(`/users/${id}`);
+    }
+  };
+  
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
@@ -134,7 +155,8 @@ export default function SearchResultsPage() {
             {results.map((result) => (
               <li
                 key={result.id}
-                className="px-4 py-2 border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => handleResultClick(result.id, result.role!)}
+                className="px-4 py-2 border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
               >
                 <div className="flex justify-between items-center">
                   <div>

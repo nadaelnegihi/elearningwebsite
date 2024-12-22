@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
+import axios from "axios";
 interface Course {
   _id: string;
   name: string;
@@ -25,12 +25,17 @@ export default function Sidebar() {
     setCoursesOpen((prev) => !prev);
     if (!coursesOpen) {
       try {
+        console.log("Fetching courses from /users/courses...");
         const response = await axiosInstance.get("/users/courses");
         setCourses(response.data.courses);
         setRole(response.data.role);
         console.log("Fetched courses:", response.data.courses);
       } catch (error: any) {
-        console.error("Error fetching courses:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("AxiosError:", error.response?.data || error.message);
+        } else {
+          console.error("Unexpected error:", error);
+        }
       }
     }
   };
@@ -83,8 +88,8 @@ export default function Sidebar() {
             </button>
             {isOpen && coursesOpen && (
               <ul className="pl-8 mt-2 space-y-1">
-                {courses.map((course) => (
-                  <li key={course._id}>
+                {courses.map((course, index) => (
+                  <li key={course._id || index}>
                     <Link
                       href={`/courses/${course._id}`}
                       className="block p-2 hover:bg-gray-600 rounded-md"

@@ -50,6 +50,7 @@ export class CoursesService {
   async getCourseById(courseId:  mongoose.Schema.Types.ObjectId): Promise<CourseDocument> {
     const course = await this.courseModel
       .findById(courseId)
+      .populate('created_by', 'name email')
       .populate('modules') 
       .exec();
     
