@@ -1,6 +1,4 @@
-'use server';
-
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import {
   LoginRequest,
   LoginActionResponse,
@@ -8,32 +6,23 @@ import {
   ApiResponse,
   LoginResponseData,
   SignupResponseData,
-  UpdateCourseDto,
-  CreateModuleDto,
-  UpdateModuleDto,
-  CreateCourseDto,
-  UpdateUserDto,
+  UpdateUserDto
 } from '@/app/lib/types'; // Adjust path based on your folder structure
 
-// Create base Axios instance
-const api = axios.create({
-  baseURL: 'http://localhost:4000',
+import {
+  CreateNoteRequest,
+  UpdateNoteRequest,
+  NoteResponse,
+  NotesListResponse,
+} from '@/app/lib/types'; // Adjust path if needed
+
+// Create Axios instance
+const api: AxiosInstance = axios.create({
+  baseURL: 'http://localhost:4000', // Replace with your backend URL
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Ensure cookies are sent
 });
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  console.log('Token in Request:', token); // Debugging
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-
 
 /* AUTHENTICATION */
 
@@ -75,161 +64,170 @@ export const signup = async (
   }
 };
 
-/* USERS */
+/* USER PROFILE */
 
-// Get user profile - GET /users/profile
-export const getProfile = async (): Promise<any> => {
+// Get User Profile - GET /users/profile
+export const getUserProfile = async (): Promise<any> => {
   try {
     const response = await api.get('/users/profile');
     return response.data;
   } catch (error: any) {
-    console.error('Profile fetch error:', error); // Log the entire error object
-    throw error.response?.data || { message: error.message || "Unknown error" };
+    console.error('Get profile error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
   }
 };
 
-
-
-// Update user profile - PUT /users/profile
-export const updateProfile = async (
-  updateUserDto: UpdateUserDto
+// Update User Profile - PUT /users/profile
+export const updateUserProfile = async (
+  updateData: UpdateUserDto
 ): Promise<any> => {
-  const response = await api.put('/users/profile', updateUserDto);
-  return response.data;
+  try {
+    const response = await api.put('/users/profile', updateData);
+    return response.data; // Return updated user data
+  } catch (error: any) {
+    console.error('Update profile error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
 };
 
-// Get user courses - GET /users/courses
+/* COURSES */
+
+// Get User Courses - GET /users/courses
 export const getUserCourses = async (): Promise<any> => {
-  const response = await api.get('/users/courses');
-  return response.data;
+  try {
+    const response = await api.get('/users/courses');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get courses error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
 };
 
-// Search students - GET /users/search-students
+// Enroll in Course - POST /users/enroll/:courseId
+export const enrollInCourse = async (courseId: string): Promise<any> => {
+  try {
+    const response = await api.post(`/users/enroll/${courseId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Enroll course error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+/* SEARCH */
+
+// Search Students - GET /users/search-students
 export const searchStudents = async (query: string): Promise<any> => {
-  const response = await api.get(`/users/search-students?query=${query}`);
-  return response.data;
+  try {
+    const response = await api.get(`/users/search-students?query=${query}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Search students error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
 };
 
-// Search instructors - GET /users/instructors-search
+// Search Instructors - GET /users/instructors-search
 export const searchInstructors = async (query: string): Promise<any> => {
-  const response = await api.get(`/users/instructors-search?query=${query}`);
-  return response.data;
+  try {
+    const response = await api.get(`/users/instructors-search?query=${query}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Search instructors error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
 };
 
-// Rate instructor - POST /users/instructor/:instructorId/rate
+/* ADMIN */
+
+// Get All Users (Admin) - GET /users/admin/manage
+export const getAllUsers = async (): Promise<any> => {
+  try {
+    const response = await api.get('/users/admin/manage');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get all users error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Delete User (Admin) - DELETE /users/admin/delete/:id
+export const deleteUser = async (userId: string): Promise<any> => {
+  try {
+    const response = await api.delete(`/users/admin/delete/${userId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete user error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+/* RATINGS */
+
+// Rate Instructor - POST /users/instructor/:instructorId/rate
 export const rateInstructor = async (
   instructorId: string,
   rating: number
-): Promise<{ message: string }> => {
-  const response = await api.post(`/users/instructor/${instructorId}/rate`, {
-    rating,
-  });
-  return response.data;
-};
-
-// Admin: Get all users - GET /users/admin/manage
-export const getAllUsers = async (): Promise<any> => {
-  const response = await api.get('/users/admin/manage');
-  return response.data;
-};
-
-// Admin: Delete user - DELETE /users/admin/delete/:id
-export const deleteUser = async (id: string): Promise<{ message: string }> => {
-  const response = await api.delete(`/users/admin/delete/${id}`);
-  return response.data;
-};
-
-// Delete own account - DELETE /users/self
-export const deleteSelf = async (): Promise<{ message: string }> => {
-  const response = await api.delete('/users/self');
-  return response.data;
-};
-
-// Enroll in course - POST /users/enroll/:courseId
-export const enrollInCourse = async (
-  courseId: string
-): Promise<{ message: string }> => {
-  const response = await api.post(`/users/enroll/${courseId}`);
-  return response.data;
-};
-
-// Get student courses by instructor - GET /users/:studentId/courses
-export const getStudentCoursesByInstructor = async (
-  studentId: string
-): Promise<any> => {
-  const response = await api.get(`/users/${studentId}/courses`);
-  return response.data;
-};
-
-/* QUESTIONS */
-
-// Update Question - PUT /questions/:questionId
-export const updateQuestion = async (
-  questionId: string,
-  updateData: Partial<any>
 ): Promise<any> => {
   try {
-    const response = await api.put(`/questions/${questionId}`, updateData);
+    const response = await api.post(`/users/instructor/${instructorId}/rate`, {
+      rating,
+    });
     return response.data;
   } catch (error: any) {
-    console.error('Update question error:', error.response?.data || error.message);
+    console.error('Rate instructor error:', error.response?.data || error.message);
     throw error.response?.data || { message: error.message };
   }
 };
 
+/* NOTES */
 
-// Delete Question - DELETE /questions/:questionId
-export const deleteQuestion = async (questionId: string): Promise<any> => {
+// Get All Notes - GET /notes
+export const getNotes = async (): Promise<any> => {
   try {
-    const response = await api.delete(`/questions/${questionId}`);
+    const response = await api.get('/notes');
     return response.data;
   } catch (error: any) {
-    console.error('Delete question error:', error.response?.data || error.message);
+    console.error('Get notes error:', error.response?.data || error.message);
     throw error.response?.data || { message: error.message };
   }
 };
 
-/* QUIZ */
-
-// Create Quiz - POST /create
-export const createQuiz = async (
-  quizData: {
-    moduleId: string;
-    numberOfQuestions: number;
-    questionTypes: 'MCQ' | 'True/False' | 'Both';
-    studentId: string;
+// Create Note - POST /notes
+export const createNote = async (noteData: { title: string; content: string }): Promise<any> => {
+  try {
+    const response = await api.post('/notes', noteData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create note error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
   }
+};
+
+// Update Note - PUT /notes/:id
+export const updateNote = async (
+  noteId: string,
+  updateData: { title?: string; content?: string }
 ): Promise<any> => {
   try {
-    const response = await api.post('/create', quizData);
+    const response = await api.put(`/notes/${noteId}`, updateData);
     return response.data;
   } catch (error: any) {
-    console.error('Create quiz error:', error.response?.data || error.message);
+    console.error('Update note error:', error.response?.data || error.message);
     throw error.response?.data || { message: error.message };
   }
 };
 
-/* QUESTIONS */
-
-// Create Question - POST /questions
-export const createQuestion = async (
-  questionData: {
-    moduleId: string;
-    questionId: string;
-    questionText: string;
-    options: string[];
-    correctAnswer: string;
-    difficulty: 'easy' | 'medium' | 'hard';
-    questionTypes: 'MCQ' | 'True/False';
-  }
-): Promise<any> => {
+// Delete Note - DELETE /notes/:id
+export const deleteNote = async (noteId: string): Promise<any> => {
   try {
-    const response: AxiosResponse<any> = await api.post('/questions', questionData);
+    const response = await api.delete(`/notes/${noteId}`);
     return response.data;
   } catch (error: any) {
-    console.error('Create question error:', error.response?.data || error.message);
+    console.error('Delete note error:', error.response?.data || error.message);
     throw error.response?.data || { message: error.message };
   }
 };
+
 
 export default api;

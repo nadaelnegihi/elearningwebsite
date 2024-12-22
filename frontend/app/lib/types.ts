@@ -4,10 +4,13 @@ export interface LoginRequest {
   password: string;
 }
 export interface LoginActionResponse {
-  message: string;
-  token?: string;
-  user?: { userid: string; role: string };
-}
+    message: string;
+    user?: {
+      userid: string;
+      role: string;
+    };
+  }
+
 // Interface for Signup Request
 export interface SignupRequest {
   name: string;
@@ -41,58 +44,35 @@ export interface UpdateUserDto {
     name?: string;
     email?: string;
   }
-
-export interface UserProfile {
+  // Interface for Note
+export interface Note {
   id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-// Courses DTOs
-export interface CreateCourseDto {
-  title: string;
-  description: string;
-  category: string;
-  difficulty_level: 'Beginner' | 'Intermediate' | 'Advanced';
-  keywords?: string[];
-}
-
-export interface UpdateCourseDto {
-  title?: string;
-  description?: string;
-  category?: string;
-  difficulty_level?: 'Beginner' | 'Intermediate' | 'Advanced';
-  keywords?: string[];
-  isAvailable?: boolean;
-}
-
-// Modules DTOs
-export interface CreateModuleDto {
-  courseId: string; // Use string for ObjectId in frontend
   title: string;
   content: string;
-  difficulty_level: 'Beginner' | 'Intermediate' | 'Advanced';
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface UpdateModuleDto {
+// Interface for Create Note Request
+export interface CreateNoteRequest {
+  title: string;
+  content: string;
+}
+
+// Interface for Update Note Request
+export interface UpdateNoteRequest {
   title?: string;
   content?: string;
-  resources?: { contentType: string; resource: string }[];
-  difficulty_level?: 'Beginner' | 'Intermediate' | 'Advanced';
 }
 
-export interface ModuleResource {
-  title: string;
-  contentType: 'video' | 'pdf' | 'image';
-  resourcePath: string;
-  date: string; // ISO format
+// Interface for Note Response
+export interface NoteResponse {
+  message: string;
+  data: Note;
 }
 
-export interface ModuleDetail {
-  id: string;
-  title: string;
-  content: string;
-  resources: ModuleResource[];
-  difficulty_level: 'Beginner' | 'Intermediate' | 'Advanced';
+// Interface for Notes List Response
+export interface NotesListResponse {
+  message: string;
+  data: Note[];
 }
