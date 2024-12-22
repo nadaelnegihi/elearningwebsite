@@ -1,21 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
+
 interface Course {
   _id: string;
-  name: string;
-  status?: string; // For students (enrolled/completed)
+  title: string;
 }
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [coursesOpen, setCoursesOpen] = useState(false); // Toggle for the "Courses" section
+  const [coursesOpen, setCoursesOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
   const handleMouseEnter = () => setIsOpen(true);
@@ -23,26 +21,19 @@ export default function Sidebar() {
 
   const toggleCourses = async () => {
     setCoursesOpen((prev) => !prev);
+
     if (!coursesOpen) {
       try {
-        console.log("Fetching courses from /users/courses...");
         const response = await axiosInstance.get("/users/courses");
-        setCourses(response.data.courses);
-        setRole(response.data.role);
-        console.log("Fetched courses:", response.data.courses);
+        setCourses(response.data.courses.map((item: { course: Course }) => item.course));
       } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-          console.error("AxiosError:", error.response?.data || error.message);
-        } else {
-          console.error("Unexpected error:", error);
-        }
+        console.error("Error fetching courses:", error.response?.data || error.message);
       }
     }
   };
 
-  const handleLogout = () => {
-    // Redirect to the login page
-    router.push("/auth/login");
+  const navigateToAllCourses = () => {
+    router.push("/courses/allcoursesstudents");
   };
 
   return (
@@ -56,7 +47,7 @@ export default function Sidebar() {
       <div className="flex flex-col h-full">
         {/* Sidebar Header */}
         <div className="p-4 font-bold text-lg border-b border-gray-700">
-          {isOpen ? "CMS Dashboard" : "CMS"}
+          {isOpen ? "Content Management System (CMS)" : "CMS"}
         </div>
 
         {/* Sidebar Links */}
@@ -64,7 +55,7 @@ export default function Sidebar() {
           <li>
             <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
               <i className="fas fa-home mr-4"></i>
-              {isOpen && <span>Home Page</span>}
+              {isOpen && <span>Dashboards</span>}
             </Link>
           </li>
 
@@ -88,18 +79,23 @@ export default function Sidebar() {
             </button>
             {isOpen && coursesOpen && (
               <ul className="pl-8 mt-2 space-y-1">
-                {courses.map((course, index) => (
-                  <li key={course._id || index}>
+                {/* All Courses Button */}
+                <li>
+                  <button
+                    onClick={navigateToAllCourses}
+                    className="block text-left w-full p-2 hover:bg-gray-600 rounded-md"
+                  >
+                    All Courses
+                  </button>
+                </li>
+                {/* Individual Courses */}
+                {courses.map((course) => (
+                  <li key={course._id}>
                     <Link
                       href={`/courses/${course._id}`}
                       className="block p-2 hover:bg-gray-600 rounded-md"
                     >
-                      {course.name}
-                      {role === "student" && course.status && (
-                        <span className="ml-2 text-sm text-gray-400">
-                          ({course.status})
-                        </span>
-                      )}
+                      {course.title}
                     </Link>
                   </li>
                 ))}
@@ -130,7 +126,7 @@ export default function Sidebar() {
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-gray-700">
           <button
-            onClick={handleLogout}
+            onClick={() => router.push("/auth/login")}
             className="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded-md"
           >
             {isOpen ? "Logout" : <i className="fas fa-sign-out-alt"></i>}

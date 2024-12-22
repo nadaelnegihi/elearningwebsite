@@ -58,8 +58,8 @@ export default function CourseDetailsPage() {
       try {
         const endpoint =
           role === "student"
-            ? `/courses/course/${courseId}/student`
-            : `/courses/course/${courseId}/instructor`;
+            ? `/modules/course/${courseId}/student`
+            : `/modules/course/${courseId}/instructor`;
         const response = await axiosInstance.get(endpoint);
         setModules(response.data);
       } catch (error) {

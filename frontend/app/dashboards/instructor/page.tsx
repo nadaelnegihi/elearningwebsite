@@ -1,14 +1,30 @@
+"use client";
+import Sidebar from "@/app/components/sidebar";
+import UserProfile from "@/app/components/userprofile";
+import SearchBar from "@/app/components/searchbar";
+
 export default function InstructorDashboard() {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-200 mb-6">
-            Instructor Dashboard
-          </h1>
-          <p className="text-center text-gray-600 dark:text-gray-300">
-            Welcome to the Instructor dashboard!
-          </p>
+  return (
+    <div className="relative flex bg-gray-900 text-white h-screen">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main content */}
+      <div className="flex-grow p-6">
+        {/* SearchBar */}
+        <SearchBar />
+
+        {/* UserProfile */}
+        <div className="mt-8">
+          <UserProfile
+            roleBasedContent={
+              <div>
+                <h2 className="text-xl font-semibold">Instructor Dashboard</h2>
+              </div>
+            }
+          />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
