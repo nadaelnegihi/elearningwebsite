@@ -29,6 +29,12 @@ export class Course extends Document {
 
   @Prop({ type: [Number], default: [] }) 
   ratings: number[];
+
+  @Prop({ required: true, default: true }) // Default to available
+  isAvailable: boolean;
+
+  @Prop({ type: [String], default: [] }) // Add keywords field
+  keywords: string[];
 }
 
 export const CoursesSchema = SchemaFactory.createForClass(Course);

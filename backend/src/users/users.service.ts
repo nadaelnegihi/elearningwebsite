@@ -12,7 +12,7 @@ export class UsersService {
   ) { }
 
   async create(userData: User): Promise<UserDocument> {
-    const newuser = new this.UserModel(userData);  // Create a new student document
+    const newuser = new this.UserModel(userData);  
     const user = await newuser.save()
     return user;  // Save it to the database
   }
@@ -24,16 +24,13 @@ export class UsersService {
     return user;  // Fetch a student by username
   }
   async findById(id: mongoose.Schema.Types.ObjectId): Promise<UserDocument> {
-    console.log(id)
+    console.log("Searching user by ID:", id); // Log the ID being searched
     const user = await this.UserModel.findById(id).select("-password");  // Fetch a student by ID
-    return user
+    return user;
   }
+  
   async updateUser(userId: mongoose.Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
-    const user= await this.UserModel.findByIdAndUpdate(
-      userId,
-      { $set: updateUserDto }, // Apply updates
-      { new: true } // Return the updated document
-    ).exec();
+    const user= await this.UserModel.findByIdAndUpdate(userId,{ $set: updateUserDto }, { new: true } ).exec();
     return user
   }
   
@@ -107,6 +104,7 @@ export class UsersService {
     }
 
 }
+
   async enrollInCourse(userId: mongoose.Types.ObjectId, courseId: mongoose.Types.ObjectId): Promise<void> {
     // Fetch the student by ID
     const user = await this.UserModel.findById(userId);
@@ -127,5 +125,30 @@ export class UsersService {
     user.studentCourses.push({ course: courseId, status: 'enrolled' });
     await user.save();
   }
-
+  async getStudentCoursesByInstructor(
+    instructorId: mongoose.Types.ObjectId,
+    studentId: mongoose.Types.ObjectId
+  ): Promise<any> {
+    const instructor = await this.UserModel.findById(instructorId);
+    if (!instructor || instructor.role !== 'instructor') {
+      throw new Error('Instructor not found or unauthorized');
+    }
+  
+    const student = await this.UserModel.findById(studentId)
+      .populate('studentCourses.course')
+      .exec();
+  
+    if (!student || student.role !== 'student') {
+      throw new Error('Student not found or invalid role');
+    }
+  
+    return {
+      studentName: student.name,
+      courses: student.studentCourses.map((courseStatus) => ({
+        course: courseStatus.course,
+        status: courseStatus.status, // enrolled or completed
+      })),
+    };
+  }
+  
 }

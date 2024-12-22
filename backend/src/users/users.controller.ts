@@ -11,13 +11,16 @@ import mongoose from 'mongoose';
 export class UsersController {
   constructor(private usersService: UsersService) { }
 
-  @UseGuards(AuthGuard, authorizationGuard)
-  @Get('profile')
-  async getProfile(@Req() req: any) {
-    const userId = req.user.userid; // Extract `userid` from the JWT
-    return this.usersService.findById(userId);
-  }
-  @UseGuards(AuthGuard, authorizationGuard)
+  @UseGuards(AuthGuard)
+@Get('profile')
+async getProfile(@Req() req: any) {
+  console.log("Decoded JWT Payload:", req.user); // Debug the decoded JWT payload
+  const userId = req.user._id; // Extract `_id` from the JWT
+  return this.usersService.findById(userId);
+}
+
+  
+  @UseGuards(AuthGuard)
   @Put('profile')
   @Roles(Role.Instructor, Role.Student)
   async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
@@ -78,6 +81,15 @@ async deleteUser(@Param('id') userId: mongoose.Schema.Types.ObjectId): Promise<{
   return { message: 'User deleted successfully' };
 }
 @UseGuards(AuthGuard, authorizationGuard)
+@Delete('self')
+async deleteSelf(@Req() req: any): Promise<{ message: string }> {
+  const loggedInUserId = req.user._id; // Extract the logged-in user's ID from JWT
+
+  await this.usersService.deleteUser(loggedInUserId);
+  return { message: 'Your account has been deleted successfully' };
+}
+
+@UseGuards(AuthGuard, authorizationGuard)
 @Roles(Role.Student)
 @Post('enroll/:courseId')
 async enrollInCourse(
@@ -88,6 +100,16 @@ async enrollInCourse(
   console.log('User ID:', userId); // Log the user ID for debugging
   await this.usersService.enrollInCourse(userId, courseId);
   return { message: 'Enrolled in course successfully' };
+}
+@UseGuards(AuthGuard, authorizationGuard)
+@Roles(Role.Instructor)
+@Get(':studentId/courses')
+async getStudentCoursesByInstructor(
+  @Req() req: any,
+  @Param('studentId') studentId: mongoose.Types.ObjectId,
+): Promise<any> {
+  const instructorId = req.user._id; // Extract instructor ID from the JWT
+  return this.usersService.getStudentCoursesByInstructor(instructorId, studentId);
 }
 
 }

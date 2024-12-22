@@ -13,12 +13,12 @@ export class NotesService {
 
   // Create a note
   async createNote(createNoteDto: CreateNoteDto, userId: mongoose.Types.ObjectId): Promise<Note> {
-    const { courseId, content } = createNoteDto;
+    const { moduleId, content } = createNoteDto;
   
     const newNote = new this.noteModel({
       noteId: new mongoose.Types.ObjectId(), // Generate a unique ID for the note
       userId, // Include the userId in the note
-      courseId,
+      moduleId,
       content,
     });
   

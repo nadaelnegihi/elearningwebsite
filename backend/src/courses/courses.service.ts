@@ -43,8 +43,9 @@ export class CoursesService {
   }
   
   async getAllCourses(): Promise<CourseDocument[]> {
-    return this.courseModel.find().exec();
+    return this.courseModel.find({ isAvailable: true }).exec();
   }
+  
 
   async getCourseById(courseId:  mongoose.Schema.Types.ObjectId): Promise<CourseDocument> {
     const course = await this.courseModel
@@ -76,8 +77,6 @@ export class CoursesService {
     return updatedCourse;
   }
 
-
-
   async deleteCourse(courseId: mongoose.Schema.Types.ObjectId): Promise<void> {
     const course = await this.courseModel.findById(courseId);
   
@@ -85,25 +84,22 @@ export class CoursesService {
       throw new Error('Course not found');
     }
   
-    await this.courseModel.findByIdAndDelete(courseId);  
+    course.isAvailable = false; // Mark the course as unavailable
+    await course.save();
   }
-  async searchCourses(query: { title?: string, category?: string, created_by?: string }): Promise<Course[]> {
-    const searchConditions = {};
-
-    if (query.title) {
-      searchConditions['title'] = { $regex: query.title, $options: 'i' };  
-    }
-
-    if (query.category) {
-      searchConditions['category'] = { $regex: query.category, $options: 'i' };
-    }
-
-    if (query.created_by) {
-      searchConditions['created_by'] = { $regex: query.created_by, $options: 'i' };
-    }
-
-    return this.courseModel.find(searchConditions).exec();
+  async searchCourses(query: string): Promise<Course[]> {
+    return this.courseModel.find({
+      isAvailable: true, // Ensures only available courses are returned
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } },
+        { created_by: { $regex: query, $options: 'i' } },
+        { keywords: { $regex: query, $options: 'i' } },
+      ],
+    }).exec();
   }
+  
+  
   async rateCourse(
     courseId: mongoose.Types.ObjectId,
     rating: number,

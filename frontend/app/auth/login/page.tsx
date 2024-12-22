@@ -1,45 +1,32 @@
-'use client';
-
-import { useState } from 'react';
-import { useActionState } from 'react';
-import { useRouter } from 'next/navigation';
-import loginAction from './login.server';
+'use client'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import login from "./login.server";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const [state, formAction] = useActionState(loginAction, { message: '' });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  const handleLocalStorageAndRedirect = (user?: { userid: string; role: string }) => {
-    if (user) {
-      // Store user data in local storage
-      localStorage.setItem('userId', user.userid);
-      localStorage.setItem('role', user.role);
-  
-      // Redirect based on the user's role
-      switch (user.role) {
-        case 'student':
-          router.push('/dashboards/student'); // Corrected path
-          break;
-        case 'instructor':
-          router.push('/dashboards/instructor'); // Corrected path
-          break;
-        case 'admin':
-          router.push('/dashboards/admin'); // Corrected path
-          break;
-        default:
-          router.push('/welcome'); // Fallback route
-      }
+    const formData = new FormData(e.currentTarget);
+    const response = await login(null, formData);
+
+    setLoading(false);
+
+    if (response.success) {
+      const redirectTo = response.redirect || "/"; // Fallback to home if redirect is undefined
+      router.push(redirectTo);
+    } else {
+      setError(response.message || "An unexpected error occurred.");
     }
   };
-  
-
-  // Trigger redirection on successful login
-  if (state?.message === 'Login successful!') {
-    handleLocalStorageAndRedirect(state.user);
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -48,17 +35,11 @@ export default function LoginPage() {
           Login
         </h1>
 
-        {state?.message && (
-          <p
-            className={`text-center mb-4 ${
-              state.message === 'Login successful!' ? 'text-green-500' : 'text-red-500'
-            }`}
-          >
-            {state.message}
-          </p>
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error}</p>
         )}
 
-        <form action={formAction} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             name="email"
             type="email"
@@ -80,8 +61,9 @@ export default function LoginPage() {
           <button
             type="submit"
             className="p-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
@@ -89,7 +71,7 @@ export default function LoginPage() {
           <p className="text-gray-600 dark:text-gray-300">Don't have an account?</p>
           <button
             onClick={() => router.push('/auth/register')}
-            className="text-blue-500 hover:underline focus:outline-none mt-2"
+            className="text-blue-500 hover:underline focus:outline-none"
           >
             Switch to Register
           </button>

@@ -15,13 +15,11 @@ export class CoursesController {
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Instructor)
   @Get('search')
-  async searchCourses(
-    @Query('title') title: string,
-    @Query('category') category: string,
-    @Query('created_by') created_by: string,
-  ): Promise<Course[]> {
-    return this.coursesService.searchCourses({ title, category, created_by });
+  async searchCourses(@Query('query') query: string): Promise<Course[]> {
+    return this.coursesService.searchCourses(query);
   }
+  
+  
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Instructor)
   @Post()
@@ -56,15 +54,15 @@ export class CoursesController {
   }
 
   @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Admin,Role.Instructor)
   @Delete('delete/:courseId')
   async deleteCourse(
     @Param('courseId') courseId: mongoose.Schema.Types.ObjectId
   ): Promise<{ message: string }> {
     await this.coursesService.deleteCourse(courseId);
-    return { message: 'Course deleted successfully' };
+    return { message: 'Course marked as unavailable successfully' };
   }
-
+  
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student)
   @Post(':courseId/rate')

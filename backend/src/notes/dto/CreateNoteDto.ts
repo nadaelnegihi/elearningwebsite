@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 export class CreateNoteDto {
 
-  courseId?:  mongoose.Types.ObjectId;
+  moduleId?:  mongoose.Types.ObjectId;
 
   content: string; 
 }

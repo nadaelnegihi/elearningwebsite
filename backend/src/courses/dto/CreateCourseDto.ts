@@ -3,6 +3,6 @@ export class CreateCourseDto {
     description: string;
     category: string;
     difficulty_level: 'Beginner' | 'Intermediate' | 'Advanced';
-    
+    keywords?: string[];
   }
   

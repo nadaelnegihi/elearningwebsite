@@ -1,38 +1,88 @@
-'use server';
+'use server'
+import axiosInstance from "@/app/lib/axiosInstance";
+import { cookies } from "next/headers";
 
-import { login } from '@/app/lib/api';
-import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { LoginActionResponse } from '@/app/lib/types';
-// Define the return type explicitly
+let backend_url = "http://localhost:4000";
 
-
-export default async function loginAction(
-  prevState: any,
-  formData: FormData
-): Promise<LoginActionResponse> {
+export default async function login(prevState: any, formData: FormData) {
   const cookieStore = await cookies();
 
   try {
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    // Call the login API function
-    const response = await login(email, password);
-    const { token, user } = response;
-
-    // Set token as an HTTP-only cookie
-    cookieStore.set('token', token, {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 3600, // 1 hour expiration
+    const response = await axiosInstance.post(`${backend_url}/auth/login`, {
+      email: formData.get("email"),
+      password: formData.get("password"),
     });
 
-    // Return success message and user data
-    return { message: 'Login successful!', user };
+    console.log("Response Headers:", response.headers);
+
+    if (response.status !== 201) {
+      console.error("Login failed. Response status not 201.");
+      return { success: false, message: "Login failed. Please check your credentials." };
+    }
+
+    const setCookieHeader = response.headers["set-cookie"]?.[0];
+    console.log("Set-Cookie Header:", setCookieHeader);
+
+    if (!setCookieHeader) {
+      console.error("Set-Cookie header missing in response.");
+      return { success: false, message: "Set-Cookie header is missing in the response." };
+    }
+
+    const tokenMatch = setCookieHeader.match(/token=([^;]*)/);
+    const maxAgeMatch = setCookieHeader.match(/max-age=([^;]*)/i); // Case-insensitive
+
+    console.log("Token Match:", tokenMatch);
+    console.log("Max-Age Match:", maxAgeMatch);
+
+    if (!tokenMatch || !maxAgeMatch) {
+      console.error("Failed to parse token or max-age from Set-Cookie header.");
+      return { success: false, message: "Failed to parse authentication token or max age." };
+    }
+
+    const token = tokenMatch[1];
+    const maxAge = parseInt(maxAgeMatch[1]);
+
+    if (!token || isNaN(maxAge)) {
+      console.error("Invalid token or max-age value.");
+      return { success: false, message: "Invalid token or max age value." };
+    }
+
+    console.log("Setting cookie in cookieStore...");
+    cookieStore.set("token", token, {
+      secure: false, // Use `true` in production with HTTPS
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge,
+    });
+    
+
+    console.log("Cookie set successfully.");
+
+    // Decode token to get user role (assuming the role is part of the token payload)
+    const tokenPayload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    const role = tokenPayload.user.role;
+
+    console.log("User role:", role);
+
+    let redirectTo = "/"; // Default redirection
+    if (role === "admin") {
+      redirectTo = "/dashboards/admin";
+    } else if (role === "instructor") {
+      redirectTo = "/dashboards/instructor";
+    } else if (role === "student") {
+      redirectTo = "/dashboards/student";
+    }
+
+    console.log("Redirecting to:", redirectTo);
+    return { success: true, redirect: redirectTo }; // Send redirect URL
   } catch (error: any) {
-    console.error('Login error:', error.message || 'Unexpected error');
-    return { message: error.message || 'Login failed. Please try again.' };
+    console.error("Error during login:", {
+      message: error.message,
+      response: error.response?.data,
+    });
+
+    const errorMessage =
+      error.response?.data?.message || "An unexpected server error occurred.";
+    return { success: false, message: errorMessage };
   }
 }
