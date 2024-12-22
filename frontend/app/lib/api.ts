@@ -173,4 +173,75 @@ export const rateInstructor = async (
   }
 };
 
+/* QUESTIONS */
+
+// Update Question - PUT /questions/:questionId
+export const updateQuestion = async (
+  questionId: string,
+  updateData: Partial<any>
+): Promise<any> => {
+  try {
+    const response = await api.put(`/questions/${questionId}`, updateData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+
+// Delete Question - DELETE /questions/:questionId
+export const deleteQuestion = async (questionId: string): Promise<any> => {
+  try {
+    const response = await api.delete(`/questions/${questionId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+/* QUIZ */
+
+// Create Quiz - POST /create
+export const createQuiz = async (
+  quizData: {
+    moduleId: string;
+    numberOfQuestions: number;
+    questionTypes: 'MCQ' | 'True/False' | 'Both';
+    studentId: string;
+  }
+): Promise<any> => {
+  try {
+    const response = await api.post('/create', quizData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create quiz error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+/* QUESTIONS */
+
+// Create Question - POST /questions
+export const createQuestion = async (
+  questionData: {
+    moduleId: string;
+    questionId: string;
+    questionText: string;
+    options: string[];
+    correctAnswer: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    questionTypes: 'MCQ' | 'True/False';
+  }
+): Promise<any> => {
+  try {
+    const response: AxiosResponse<any> = await api.post('/questions', questionData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
 export default api;
