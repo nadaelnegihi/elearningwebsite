@@ -6,22 +6,33 @@ import {
   ApiResponse,
   LoginResponseData,
   SignupResponseData,
-  UpdateUserDto
-} from '@/app/lib/types'; // Adjust path based on your folder structure
-
-import {
+  UpdateCourseDto,
+  CreateModuleDto,
+  UpdateModuleDto,
+  CreateCourseDto,
+  UpdateUserDto,
   CreateNoteRequest,
   UpdateNoteRequest,
   NoteResponse,
   NotesListResponse,
-} from '@/app/lib/types'; // Adjust path if needed
+} from '@/app/lib/types'; // Adjust path based on your folder structure
 
 // Create Axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:4000', // Replace with your backend URL
+  baseURL: 'http://localhost:4000',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Ensure cookies are sent
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  console.log('Token in Request:', token); // Debugging
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 /* AUTHENTICATION */
@@ -67,7 +78,7 @@ export const signup = async (
 /* USER PROFILE */
 
 // Get User Profile - GET /users/profile
-export const getUserProfile = async (): Promise<any> => {
+export const getProfile = async (): Promise<any> => {
   try {
     const response = await api.get('/users/profile');
     return response.data;
@@ -78,11 +89,11 @@ export const getUserProfile = async (): Promise<any> => {
 };
 
 // Update User Profile - PUT /users/profile
-export const updateUserProfile = async (
-  updateData: UpdateUserDto
+export const updateProfile = async (
+  updateUserDto: UpdateUserDto
 ): Promise<any> => {
   try {
-    const response = await api.put('/users/profile', updateData);
+    const response = await api.put('/users/profile', updateUserDto);
     return response.data; // Return updated user data
   } catch (error: any) {
     console.error('Update profile error:', error.response?.data || error.message);
@@ -180,6 +191,74 @@ export const rateInstructor = async (
   }
 };
 
+/* QUESTIONS */
+
+// Create Question - POST /questions
+export const createQuestion = async (
+  questionData: {
+    moduleId: string;
+    questionId: string;
+    questionText: string;
+    options: string[];
+    correctAnswer: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    questionTypes: 'MCQ' | 'True/False';
+  }
+): Promise<any> => {
+  try {
+    const response: AxiosResponse<any> = await api.post('/questions', questionData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Update Question - PUT /questions/:questionId
+export const updateQuestion = async (
+  questionId: string,
+  updateData: Partial<any>
+): Promise<any> => {
+  try {
+    const response = await api.put(`/questions/${questionId}`, updateData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+// Delete Question - DELETE /questions/:questionId
+export const deleteQuestion = async (questionId: string): Promise<any> => {
+  try {
+    const response = await api.delete(`/questions/${questionId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete question error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+/* QUIZ */
+
+// Create Quiz - POST /create
+export const createQuiz = async (
+  quizData: {
+    moduleId: string;
+    numberOfQuestions: number;
+    questionTypes: 'MCQ' | 'True/False' | 'Both';
+    studentId: string;
+  }
+): Promise<any> => {
+  try {
+    const response = await api.post('/create', quizData);
+    return response.data;
+  } catch (error: any) {
+    console.error('Create quiz error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
 /* NOTES */
 
 // Get All Notes - GET /notes
@@ -228,6 +307,5 @@ export const deleteNote = async (noteId: string): Promise<any> => {
     throw error.response?.data || { message: error.message };
   }
 };
-
 
 export default api;
