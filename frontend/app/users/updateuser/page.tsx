@@ -18,19 +18,21 @@ export default function EditProfilePage() {
 
   const router = useRouter();
 
-  // Fetch the user's role
+  // Fetch the user's role and prepopulate existing user details
   useEffect(() => {
-    const fetchUserRole = async () => {
+    const fetchUserProfile = async () => {
       try {
         const response = await axiosInstance.get("/users/profile");
-        setRole(response.data.role); // Set the user's role (e.g., "admin", "instructor", "student")
+        setRole(response.data.role); // Set the user's role
+        setName(response.data.name); // Prepopulate name
+        setEmail(response.data.email); // Prepopulate email
       } catch (error: any) {
-        console.error("Error fetching user role:", error);
-        setError(error.response?.data?.message || "Failed to fetch user role.");
+        console.error("Error fetching user profile:", error);
+        setError(error.response?.data?.message || "Failed to fetch user profile.");
       }
     };
 
-    fetchUserRole();
+    fetchUserProfile();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +40,16 @@ export default function EditProfilePage() {
     setLoading(true);
 
     try {
-      const updateUserDto: UpdateUserDto = { name, email };
+      // Only include fields that have been updated
+      const updateUserDto: UpdateUserDto = {};
+      if (name.trim() !== "") {
+        updateUserDto.name = name;
+      }
+      if (email.trim() !== "") {
+        updateUserDto.email = email;
+      }
+
+      // Send update request
       await axiosInstance.put("/users/profile", updateUserDto);
       alert("Profile updated successfully.");
 

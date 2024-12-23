@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -8,13 +8,29 @@ import Link from "next/link";
 interface Course {
   _id: string;
   title: string;
+  description: string;
 }
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
+
+  // Fetch user role on component mount
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await axiosInstance.get("/users/profile");
+        setUserRole(response.data.role); // Assuming `role` is part of the response
+      } catch (error: any) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleMouseEnter = () => setIsOpen(true);
   const handleMouseLeave = () => setIsOpen(false);
@@ -25,7 +41,15 @@ export default function Sidebar() {
     if (!coursesOpen) {
       try {
         const response = await axiosInstance.get("/users/courses");
-        setCourses(response.data.courses.map((item: { course: Course }) => item.course));
+
+        // Ensure all courses are properly mapped
+        const validCourses = response.data.courses.map((course: Course) => ({
+          _id: course._id,
+          title: course.title,
+          description: course.description,
+        }));
+
+        setCourses(validCourses);
       } catch (error: any) {
         console.error("Error fetching courses:", error.response?.data || error.message);
       }
@@ -33,8 +57,18 @@ export default function Sidebar() {
   };
 
   const navigateToAllCourses = () => {
-    router.push("/courses/allcoursesstudents");
+    if (userRole === "admin") {
+      router.push("/courses/allcourses");
+    } else if (userRole === "instructor") {
+      router.push("/courses/allcoursesinstructor");
+    } else if (userRole === "student") {
+      router.push("/courses/allcoursesstudents");
+    }
   };
+
+  if (userRole === null) {
+    return <div>Loading user data...</div>; // Show a loading state until the role is fetched
+  }
 
   return (
     <div
@@ -79,7 +113,6 @@ export default function Sidebar() {
             </button>
             {isOpen && coursesOpen && (
               <ul className="pl-8 mt-2 space-y-1">
-                {/* All Courses Button */}
                 <li>
                   <button
                     onClick={navigateToAllCourses}
@@ -88,17 +121,20 @@ export default function Sidebar() {
                     All Courses
                   </button>
                 </li>
-                {/* Individual Courses */}
-                {courses.map((course) => (
-                  <li key={course._id}>
-                    <Link
-                      href={`/courses/${course._id}`}
-                      className="block p-2 hover:bg-gray-600 rounded-md"
-                    >
-                      {course.title}
-                    </Link>
-                  </li>
-                ))}
+                {courses.length > 0 ? (
+                  courses.map((course) => (
+                    <li key={course._id}>
+                      <Link
+                        href={`/courses/${course._id}`}
+                        className="block p-2 hover:bg-gray-600 rounded-md"
+                      >
+                        {course.title}
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <p className="text-gray-400">No courses available.</p>
+                )}
               </ul>
             )}
           </li>
