@@ -304,4 +304,81 @@ export const deleteNote = async (noteId: string): Promise<any> => {
   }
 };
 
+// Progress
+export const getCourseCompletionRate = async (courseId: string): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/course/${courseId}/completion-rate`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get course completion error:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+export const getStudentAverageScore = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/student/average-score`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get student average score:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+export const getStudentPerformanceMetric = async (courseId : string): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/course/${courseId}/performance-metric`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get mtudent merformance metric:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+//intructor
+export const getStudentEngagementAnalytics = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/instructor/engagement`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get student engagement analytics:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+
+//intructor
+export const getContentEffectivenessAnalytics = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/instructor/content-effectiveness`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get content effectiveness analytics:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+
+//intructor
+export const getQuizzesByInstructor = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/instructor/quiz-results`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get quizzes by instructor:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
+
+
+//intructor
+export const downloadAnalytics = async (): Promise<any> => {
+  try {
+    const response = await api.get(`/progress/instructor/download`);
+    return response.data;
+  } catch (error: any) {
+    console.error('get download analytics:', error.response?.data || error.message);
+    throw error.response?.data || { message: error.message };
+  }
+};
 export default api;

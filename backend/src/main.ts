@@ -16,7 +16,7 @@ async function bootstrap() {
   console.log('PORT:', process.env.PORT); // Log the PORT value
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: 'http://localhost:3000', // Frontend origin
+    origin: `http://localhost:${process.env.FRONTEND_PORT || 3000}`, // Frontend origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow credentials (cookies)
     allowedHeaders: ['Authorization', 'Content-Type'],

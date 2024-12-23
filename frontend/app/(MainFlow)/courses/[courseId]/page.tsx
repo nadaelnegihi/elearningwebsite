@@ -4,7 +4,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 
-interface CourseDetails {
+export interface CourseDetails {
+  _id: string;
   id: string;
   title: string;
   description: string;
