@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
+import { useRouter } from "next/navigation";
 
 interface User {
   _id: string;
@@ -14,6 +15,7 @@ export default function ManageUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   // Fetch all users on load
   useEffect(() => {
@@ -43,6 +45,10 @@ export default function ManageUsersPage() {
       console.error("Error deleting user:", err.response?.data || err.message);
       alert("Failed to delete user. Please try again.");
     }
+  };
+
+  const handleViewCourses = (studentId: string) => {
+    router.push(`/courses/allcoursesstudent?studentId=${studentId}`);
   };
 
   if (loading) {
@@ -83,7 +89,15 @@ export default function ManageUsersPage() {
                 <td className="px-6 py-4">{user.name}</td>
                 <td className="px-6 py-4">{user.email}</td>
                 <td className="px-6 py-4">{user.role}</td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 flex space-x-2">
+                  {user.role === "student" && (
+                    <button
+                      onClick={() => handleViewCourses(user._id)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition"
+                    >
+                      View Courses
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDeleteUser(user._id)}
                     className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition"

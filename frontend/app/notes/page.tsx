@@ -1,10 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getNotes, createNote, updateNote, deleteNote } from '@/app/lib/api';
-import { Note } from '@/app/lib/types';
+import axiosInstance from '../lib/axiosInstance';
 
-const NotesPage: React.FC = () => {
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -17,7 +22,7 @@ const NotesPage: React.FC = () => {
 
   const fetchNotes = async () => {
     try {
-      const response = await getNotes();
+      const response = await axiosInstance.get('/notes'); // Fetch notes
       setNotes(response.data);
     } catch (error) {
       console.error('Error fetching notes:', error);
@@ -26,7 +31,7 @@ const NotesPage: React.FC = () => {
 
   const handleCreateNote = async () => {
     try {
-      await createNote(noteForm);
+      await axiosInstance.post('/notes', noteForm); // Create note
       setNoteForm({ title: '', content: '' });
       fetchNotes(); // Refresh notes
     } catch (error) {
@@ -38,7 +43,7 @@ const NotesPage: React.FC = () => {
     if (!selectedNote) return;
 
     try {
-      await updateNote(selectedNote.id, noteForm);
+      await axiosInstance.put(`/notes/${selectedNote.id}`, noteForm); // Update note
       setIsEditing(false);
       setSelectedNote(null);
       setNoteForm({ title: '', content: '' });
@@ -50,7 +55,7 @@ const NotesPage: React.FC = () => {
 
   const handleDeleteNote = async (id: string) => {
     try {
-      await deleteNote(id);
+      await axiosInstance.delete(`/notes/${id}`); // Delete note
       fetchNotes(); // Refresh notes
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -109,6 +114,4 @@ const NotesPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default NotesPage;
+}
