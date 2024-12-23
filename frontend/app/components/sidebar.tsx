@@ -43,14 +43,17 @@ export default function Sidebar() {
     if (!coursesOpen) {
       try {
         const response = await axiosInstance.get("/users/courses");
-
+        
         // Ensure all courses are properly mapped
-        const validCourses = response.data.courses.map((course: Course) => ({
-          _id: course._id,
-          title: course.title,
-          description: course.description,
-        }));
-
+        const validCourses = response.data.courses.map((course: Course | { course: Course }) => {
+          const c = (course as unknown as { course: Course }).course || course
+          return {
+            _id: c._id,
+            title: c.title,
+            description: c.description,
+          }
+        });
+        
         setCourses(validCourses);
       } catch (error: any) {
         console.error("Error fetching courses:", error.response?.data || error.message);

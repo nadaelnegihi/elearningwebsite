@@ -2,7 +2,6 @@
 
 import { downloadAnalytics, getContentEffectivenessAnalytics, getCourseCompletionRate, getQuizzesByInstructor, getStudentAverageScore, getStudentEngagementAnalytics, getStudentPerformanceMetric, getUserCourses } from "@/app/lib/api";
 import { useEffect, useState } from "react";
-import { CourseDetails } from "../courses/[courseId]/page";
 import { useUserContext } from "@/app/__context";
 import ContentEffectivnessCard from "./__components/contentEffectiveness";
 import PerformanceCard from "./__components/componentsCard";
@@ -28,21 +27,23 @@ export default function StudentProgress() {
                 setAvgScore(res.averageScore)
             })
             getUserCourses().then(res => {
-                res.courses.map((studentCourse: { course: CourseDetails }) => {
-                    const courseId = studentCourse.course._id
-                    getCourseCompletionRate(courseId).then(res => {
-                        setCoursesProgress({
-                            ...coursesProgress,
-                            [studentCourse.course.title]: res.completionRate
+                res.courses.map((studentCourse: { course: any }) => {
+                    const courseId = studentCourse.course?._id
+                    if(courseId) {
+                        getCourseCompletionRate(courseId).then(res => {
+                            setCoursesProgress({
+                                ...coursesProgress,
+                                [studentCourse.course.title]: res.completionRate
+                            })
                         })
-                    })
-                    getStudentPerformanceMetric(courseId).then(res => {
-                        console.log(res);
-                        setCoursesMatrix({
-                            ...coursesMatrix,
-                            [studentCourse.course.title]: res.performanceMetric
+                        getStudentPerformanceMetric(courseId).then(res => {
+                            console.log(res);
+                            setCoursesMatrix({
+                                ...coursesMatrix,
+                                [studentCourse.course.title]: res.performanceMetric
+                            })
                         })
-                    })
+                    }
                 })
             })
         } else {
@@ -75,7 +76,7 @@ export default function StudentProgress() {
                     <hr className="my-4" />
                     <h3>Courses Completion Rates</h3>
                     {Object.entries(coursesProgress).map(([courseName, score]) => (
-                        <>
+                        <div key={courseName}>
                             <p key={courseName}><b>{courseName}</b></p>
                             <div className="mt-2">
                                 <div className="bg-gray-200 rounded-full h-2">
@@ -88,12 +89,12 @@ export default function StudentProgress() {
                                     {((score / 100) * 100).toFixed(0)}% completed
                                 </p>
                             </div>
-                        </>
+                        </div>
                     ))}
                     <hr className="my-4" />
                     <h3>Courses Progress Matrix</h3>
                     {Object.entries(coursesMatrix).map(([courseName, score]) => (
-                        <>
+                        <div key={courseName}>
                             <p key={courseName}><b>{courseName}</b></p>
 
                             <div className="mt-2">
@@ -107,8 +108,7 @@ export default function StudentProgress() {
                                     {((score / 100) * 100).toFixed(0)}% completed
                                 </p>
                             </div>
-                        </>
-
+                        </div>
                     ))}
                 </>
             ) : (
