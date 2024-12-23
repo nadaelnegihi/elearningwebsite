@@ -37,7 +37,7 @@ export class CoursesController {
   }
 
   @UseGuards(AuthGuard, authorizationGuard)
-  @Roles(Role.Instructor,Role.Student)
+  @Roles(Role.Instructor,Role.Student,Role.Admin)
   @Get(':courseId')
   async getCourse(@Param('courseId') courseId: mongoose.Schema.Types.ObjectId) {
     return this.coursesService.getCourseById(courseId);

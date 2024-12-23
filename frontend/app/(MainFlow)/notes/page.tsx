@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getNotes, createNote, updateNote, deleteNote } from '@/app/lib/api';
 import { Note } from '@/app/lib/types';
+import './styles.css';
 
 const NotesPage: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -110,5 +111,6 @@ const NotesPage: React.FC = () => {
     </div>
   );
 };
+
 
 export default NotesPage;
