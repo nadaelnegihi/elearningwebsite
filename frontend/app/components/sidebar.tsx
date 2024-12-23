@@ -4,6 +4,7 @@ import { useState } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useUserContext } from "../__context";
 
 interface Course {
   _id: string;
@@ -11,6 +12,7 @@ interface Course {
 }
 
 export default function Sidebar() {
+  const { role } = useUserContext()
   const [isOpen, setIsOpen] = useState(false);
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -25,7 +27,7 @@ export default function Sidebar() {
     if (!coursesOpen) {
       try {
         const response = await axiosInstance.get("/users/courses");
-        setCourses(response.data.courses.map((item: { course: Course }) => item.course));
+        setCourses(response.data.courses.map((item: { course: Course }) => item.course || item));
       } catch (error: any) {
         console.error("Error fetching courses:", error.response?.data || error.message);
       }
@@ -47,7 +49,7 @@ export default function Sidebar() {
       <div className="flex flex-col h-full">
         {/* Sidebar Header */}
         <div className="p-4 font-bold text-lg border-b border-gray-700">
-          {isOpen ? "Content Management System (CMS)" : "CMS"}
+          {isOpen ? `Content Management System (CMS)` : "CMS"}
         </div>
 
         {/* Sidebar Links */}
@@ -119,6 +121,12 @@ export default function Sidebar() {
             <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
               <i className="fas fa-bell mr-4"></i>
               {isOpen && <span>Notifications</span>}
+            </Link>
+          </li>
+          <li>
+            <Link href="/progress" className="flex items-center p-3 hover:bg-gray-700">
+              <i className="fas fa-bell mr-4"></i>
+              {isOpen && <span>Progress</span>}
             </Link>
           </li>
         </ul>

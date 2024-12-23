@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Progress, ProgressDocument } from './models/progress.schema';
-import { Module,ModuleDocument } from 'src/modules/models/modules.schema';
-import { User,UserDocument } from 'src/users/models/users.schema';
+import { Module, ModuleDocument } from 'src/modules/models/modules.schema';
+import { User, UserDocument } from 'src/users/models/users.schema';
 import { Course, CourseDocument } from 'src/courses/models/courses.schema';
 import { Response, ResponseDocument } from 'src/responses/models/responses.schema';
-import { Quiz,QuizDocument } from 'src/quizzes/models/quizzes.schema';
+import { Quiz, QuizDocument } from 'src/quizzes/models/quizzes.schema';
 @Injectable()
 export class ProgressService {
   constructor(
@@ -16,7 +16,7 @@ export class ProgressService {
     @InjectModel(Module.name) private readonly moduleModel: mongoose.Model<ModuleDocument>,
     @InjectModel(Response.name) private responseModel: mongoose.Model<ResponseDocument>,
     @InjectModel(Quiz.name) private quizModel: mongoose.Model<QuizDocument>,
-  ) {}
+  ) { }
 
   async getCourseCompletionRate(
     courseId: mongoose.Types.ObjectId,
@@ -52,17 +52,17 @@ export class ProgressService {
   ): Promise<{ studentId: mongoose.Types.ObjectId; averageScore: number }> {
     // Fetch the student's document
     const student = await this.userModel.findById(studentId);
-  
+
     if (!student) {
       throw new Error('Student not found.');
     }
-  
+
     // Calculate average score
     const averageScore =
       student.scores.length > 0
         ? student.scores.reduce((a, b) => a + b, 0) / student.scores.length
         : 0;
-  
+
     return {
       studentId,
       averageScore: Math.round(averageScore * 100) / 100, // Round to two decimal places
@@ -77,13 +77,13 @@ export class ProgressService {
   }> {
     // Fetch course completion rate
     const { completionRate } = await this.getCourseCompletionRate(courseId, studentId);
-  
+
     // Fetch student's average score
     const { averageScore } = await this.getStudentAverageScore(studentId);
-  
+
     // Calculate performance metric using a weighted formula
     const performanceMetric = (completionRate * 0.6) + (averageScore * 0.4);
-  
+
     return {
       courseId,
       performanceMetric: Math.round(performanceMetric * 100) / 100, // Round to two decimal places
@@ -91,93 +91,92 @@ export class ProgressService {
   }
 
 
- async getStudentEngagementAnalytics(
-  instructorId: mongoose.Types.ObjectId,
-): Promise<
-  {
-    courseId: mongoose.Types.ObjectId;
-    courseName: string;
-    enrolledStudents: number;
-    completedStudents: number;
-    performanceMetrics: {
-      belowAverage: number;
-      average: number;
-      aboveAverage: number;
-      excellent: number;
-    };
-  }[]
-> {
-  // Fetch the courses taught by the instructor
-  const instructor = await this.userModel
-    .findById(instructorId)
-    .populate('teachingCourses')
-    .exec();
-
-  if (!instructor) {
-    throw new Error('Instructor not found');
-  }
-
-  const courses = instructor.teachingCourses;
-
-  if (!courses || courses.length === 0) {
-    throw new Error('This instructor is not teaching any courses.');
-  }
-
-  const analytics = [];
-
-  for (const courseId of courses) {
-    const students = await this.userModel
-      .find({ 'studentCourses.course': courseId, role: 'student' })
+  async getStudentEngagementAnalytics(
+    instructorId: mongoose.Types.ObjectId,
+  ): Promise<
+    {
+      courseId: mongoose.Types.ObjectId;
+      courseName: string;
+      enrolledStudents: number;
+      completedStudents: number;
+      performanceMetrics: {
+        belowAverage: number;
+        average: number;
+        aboveAverage: number;
+        excellent: number;
+      };
+    }[]
+  > {
+    // Fetch the courses taught by the instructor
+    const instructor = await this.userModel
+      .findById(instructorId)
+      .populate('teachingCourses')
       .exec();
 
-    const enrolledStudents = students.length;
-
-    const completedStudents = students.filter((student) =>
-      student.studentCourses.some(
-        (course) =>
-          course.course.toString() === courseId.toString() &&
-          course.status === 'completed',
-      ),
-    ).length;
-
-    const performanceMetrics = {
-      belowAverage: 0,
-      average: 0,
-      aboveAverage: 0,
-      excellent: 0,
-    };
-
-    for (const student of students) {
-      const avgScore =
-        student.scores.length > 0
-          ? student.scores.reduce((a, b) => a + b, 0) / student.scores.length
-          : 0;
-
-      if (avgScore < 50) {
-        performanceMetrics.belowAverage++;
-      } else if (avgScore >= 50 && avgScore < 70) {
-        performanceMetrics.average++;
-      } else if (avgScore >= 70 && avgScore < 90) {
-        performanceMetrics.aboveAverage++;
-      } else {
-        performanceMetrics.excellent++;
-      }
+    if (!instructor) {
+      throw new Error('Instructor not found');
     }
 
-    const course = await this.courseModel.findById(courseId).exec();
-    analytics.push({
-      courseId,
-      courseName: course.title,
-      enrolledStudents,
-      completedStudents,
-      performanceMetrics,
-    });
+    const courses = instructor.teachingCourses;
+
+    if (!courses || courses.length === 0) {
+      throw new Error('This instructor is not teaching any courses.');
+    }
+
+    const analytics = [];
+
+    for (const courseId of courses) {
+      const students = await this.userModel
+        .find({ 'studentCourses.course': courseId, role: 'student' })
+        .exec();
+
+      const enrolledStudents = students.length;
+
+      const completedStudents = students.filter((student) =>
+        student.studentCourses.some(
+          (course) =>
+            course.course.toString() === courseId.toString() &&
+            course.status === 'completed',
+        ),
+      ).length;
+
+      const performanceMetrics = {
+        belowAverage: 0,
+        average: 0,
+        aboveAverage: 0,
+        excellent: 0,
+      };
+
+      for (const student of students) {
+        const avgScore =
+          student.scores.length > 0
+            ? student.scores.reduce((a, b) => a + b, 0) / student.scores.length
+            : 0;
+
+        if (avgScore < 50) {
+          performanceMetrics.belowAverage++;
+        } else if (avgScore >= 50 && avgScore < 70) {
+          performanceMetrics.average++;
+        } else if (avgScore >= 70 && avgScore < 90) {
+          performanceMetrics.aboveAverage++;
+        } else {
+          performanceMetrics.excellent++;
+        }
+      }
+
+      const course = await this.courseModel.findById(courseId).exec();
+      analytics.push({
+        courseId,
+        courseName: course.title,
+        enrolledStudents,
+        completedStudents,
+        performanceMetrics,
+      });
+    }
+
+    return analytics;
   }
-
-  return analytics;
-}
-
-async getContentEffectivenessAnalytics(
+  async getContentEffectivenessAnalytics(
     instructorId: mongoose.Types.ObjectId,
   ): Promise<
     {
@@ -193,59 +192,59 @@ async getContentEffectivenessAnalytics(
       .findById(instructorId)
       .populate('teachingCourses')
       .exec();
-  
+
     if (!instructor) {
       throw new Error('Instructor not found');
     }
-  
+
     const courses = instructor.teachingCourses;
-  
+
     if (!courses || courses.length === 0) {
       throw new Error('This instructor is not teaching any courses.');
     }
-  
+
     const analytics = [];
-  
+
     for (const courseId of courses) {
       const course = await this.courseModel.findById(courseId).exec();
-  
+
       if (!course) continue;
-  
+
       const courseRating =
         course.ratings.length > 0
           ? course.ratings.reduce((a, b) => a + b, 0) / course.ratings.length
           : 0;
-  
+
       const modules = await this.moduleModel.find({ courseId }).exec();
       const moduleRatings = modules.map((module) => ({
         moduleId: module._id,
+        name: module.title,
         averageRating:
           module.ratings.length > 0
             ? module.ratings.reduce((a, b) => a + b, 0) / module.ratings.length
             : 0,
       }));
-  
+
       const instructorRating =
         instructor && instructor.ratings.length > 0
           ? instructor.ratings.reduce((a, b) => a + b, 0) / instructor.ratings.length
           : 0;
-  
+
       analytics.push({
         courseId,
         courseName: course.title,
         courseRating: Math.round(courseRating * 100) / 100,
         moduleRatings: moduleRatings.map((module) => ({
+          name: module.name,
           moduleId: module.moduleId,
           averageRating: Math.round(module.averageRating * 100) / 100,
         })),
         instructorRating: Math.round(instructorRating * 100) / 100,
       });
     }
-  
+
     return analytics;
   }
-  
-
   async getQuizzesByInstructor(
     instructorId: mongoose.Types.ObjectId,
   ): Promise<{
@@ -319,5 +318,5 @@ async getContentEffectivenessAnalytics(
     return results;
   }
 }
-  
+
 
