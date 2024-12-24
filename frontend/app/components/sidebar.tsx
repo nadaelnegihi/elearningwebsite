@@ -73,6 +73,10 @@ export default function Sidebar() {
     }
   };
 
+  const navigateToManageUsers = () => {
+    router.push("/users/allusers"); // Navigate to manage users page
+  };
+
   const handleSearchChat = () => {
     if (!conversationId.trim()) {
       alert("Please enter a valid Conversation ID");
@@ -94,7 +98,9 @@ export default function Sidebar() {
     router.push(`/forums/search?query=${forumQuery}`);
     setShowSearchForumModal(false);
   };
-
+  const navigateToProgress = () => {
+    router.push("/progress"); // Navigate to progress page
+  };
   const navigateToAllCourses = () => {
     if (userRole === "admin") {
       router.push("/courses/allcourses");
@@ -125,94 +131,120 @@ export default function Sidebar() {
 
         {/* Sidebar Links */}
         <ul className="flex-grow space-y-2 mt-4">
-          {/* Courses Section */}
-          <li>
-            <button
-              onClick={toggleCourses}
-              className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
-            >
-              <i className="fas fa-book mr-4"></i>
-              {isOpen && <span>Courses</span>}
-              {isOpen && (
-                <span className="ml-auto">
-                  {coursesOpen ? (
-                    <i className="fas fa-chevron-up"></i>
-                  ) : (
-                    <i className="fas fa-chevron-down"></i>
-                  )}
-                </span>
-              )}
-            </button>
-            {isOpen && coursesOpen && (
-              <ul className="pl-8 mt-2 space-y-1">
-                <li>
-                  <button
-                    onClick={navigateToAllCourses}
-                    className="block text-left w-full p-2 hover:bg-gray-600 rounded-md"
-                  >
-                    All Courses
-                  </button>
-                </li>
-                {courses.length > 0 ? (
-                  courses.map((course) => (
-                    <li key={course._id}>
-                      <Link
-                        href={`/courses/${course._id}`}
-                        className="block p-2 hover:bg-gray-600 rounded-md"
-                      >
-                        {course.title}
-                      </Link>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-gray-400">No courses available.</p>
-                )}
-              </ul>
-            )}
-          </li>
-
-          {/* Chats Section (Only for Student or Instructor) */}
-          {(userRole === "student" || userRole === "instructor") && (
-            <>
-              <li>
-                <button
-                  onClick={navigateToChats}
-                  className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
-                >
-                  <i className="fas fa-envelope mr-4"></i>
-                  {isOpen && <span>Chats</span>}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setShowSearchChatModal(true)}
-                  className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
-                >
-                  <i className="fas fa-search mr-4"></i>
-                  {isOpen && <span>Search Chats</span>}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={navigateToForums}
-                  className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
-                >
-                  <i className="fas fa-comments mr-4"></i>
-                  {isOpen && <span>Forums</span>}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setShowSearchForumModal(true)}
-                  className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
-                >
-                  <i className="fas fa-search mr-4"></i>
-                  {isOpen && <span>Search Forums</span>}
-                </button>
-              </li>
-            </>
+  {/* Courses Section */}
+  <li>
+    <button
+      onClick={toggleCourses}
+      className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+    >
+      <i className="fas fa-book mr-4"></i>
+      {isOpen && <span>Courses</span>}
+      {isOpen && (
+        <span className="ml-auto">
+          {coursesOpen ? (
+            <i className="fas fa-chevron-up"></i>
+          ) : (
+            <i className="fas fa-chevron-down"></i>
           )}
-        </ul>
+        </span>
+      )}
+    </button>
+    {isOpen && coursesOpen && (
+      <ul className="pl-8 mt-2 space-y-1">
+        <li>
+          <button
+            onClick={navigateToAllCourses}
+            className="block text-left w-full p-2 hover:bg-gray-600 rounded-md"
+          >
+            All Courses
+          </button>
+        </li>
+        {courses.length > 0 ? (
+          courses.map((course) => (
+            <li key={course._id}>
+              <Link
+                href={`/courses/${course._id}`}
+                className="block p-2 hover:bg-gray-600 rounded-md"
+              >
+                {course.title}
+              </Link>
+            </li>
+          ))
+        ) : (
+          <p className="text-gray-400">No courses available.</p>
+        )}
+      </ul>
+    )}
+  </li>
+
+  {/* Progress Section */}
+  {(userRole === "student" || userRole === "instructor") && (
+    <li>
+      <button
+        onClick={navigateToProgress}
+        className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+      >
+        <i className="fas fa-chart-line mr-4"></i>
+        {isOpen && <span>Progress</span>}
+      </button>
+    </li>
+  )}
+
+  {/* Chats Section (Only for Student or Instructor) */}
+  {(userRole === "student" || userRole === "instructor") && (
+    <>
+      <li>
+        <button
+          onClick={navigateToChats}
+          className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+        >
+          <i className="fas fa-envelope mr-4"></i>
+          {isOpen && <span>Chats</span>}
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => setShowSearchChatModal(true)}
+          className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+        >
+          <i className="fas fa-search mr-4"></i>
+          {isOpen && <span>Search Chats</span>}
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={navigateToForums}
+          className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+        >
+          <i className="fas fa-comments mr-4"></i>
+          {isOpen && <span>Forums</span>}
+        </button>
+      </li>
+      <li>
+        <button
+          onClick={() => setShowSearchForumModal(true)}
+          className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+        >
+          <i className="fas fa-search mr-4"></i>
+          {isOpen && <span>Search Forums</span>}
+        </button>
+      </li>
+    </>
+  )}
+
+  {/* Manage Users Section (Admins Only) */}
+  {userRole === "admin" && (
+    <li>
+      <button
+        onClick={navigateToManageUsers}
+        className="flex items-center w-full text-left p-3 hover:bg-gray-700 focus:outline-none"
+      >
+        <i className="fas fa-users mr-4"></i>
+        {isOpen && <span>Manage Users</span>}
+      </button>
+    </li>
+  )}
+</ul>
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-gray-700">

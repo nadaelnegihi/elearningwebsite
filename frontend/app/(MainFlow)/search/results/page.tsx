@@ -38,10 +38,10 @@ export default function SearchResultsPage() {
     const fetchResults = async () => {
       if (!query) return;
       setIsLoading(true);
-  
+
       try {
         const requests = [];
-  
+
         if (userRole === "student") {
           requests.push(
             axiosInstance.get("/courses/search", { params: { query } })
@@ -67,7 +67,7 @@ export default function SearchResultsPage() {
             axiosInstance.get("/users/instructors-search", { params: { query } })
           );
         }
-  
+
         const responses = await Promise.all(
           requests.map((req) =>
             req.catch((err) => {
@@ -76,17 +76,14 @@ export default function SearchResultsPage() {
             })
           )
         );
-  
-        // Log all responses to identify issues
-        console.log("API Responses:", responses);
-  
+
         const courses =
           responses[0]?.data?.map((course: any) => ({
             id: course._id,
             name: course.title,
             role: "Course",
           })) || [];
-  
+
         const students =
           responses.length > 1 && userRole !== "student"
             ? responses[1]?.data?.map((student: any) => ({
@@ -96,7 +93,7 @@ export default function SearchResultsPage() {
                 role: "Student",
               }))
             : [];
-  
+
         const instructors =
           responses.length > 1 && userRole === "student"
             ? responses[1]?.data?.map((instructor: any) => ({
@@ -113,7 +110,7 @@ export default function SearchResultsPage() {
                 role: "Instructor",
               }))
             : [];
-  
+
         setResults([...courses, ...students, ...instructors]);
       } catch (error: any) {
         console.error("Unexpected error fetching results:", error.message);
@@ -121,26 +118,22 @@ export default function SearchResultsPage() {
         setIsLoading(false);
       }
     };
-  
+
     fetchResults();
   }, [query, userRole]);
-  
-
-  // Navigate to details page
-  const handleResultClick = (id: string, role: string) => {
-    console.log("Navigating to:", id, "Role:", role); // Log the clicked result
-    if (role === "Course") {
-      router.push(`/courses/${id}`);
-    } else if (role === "Instructor") {
-      router.push(`/users/${id}`);
-    } else if (role === "Student") {
-      router.push(`/users/${id}`);
-    }
-  };
 
   // Handle view courses for students
   const handleViewCourses = (studentId: string) => {
     router.push(`/courses/students/${studentId}`);
+  };
+
+  // Navigate to details page
+  const handleResultClick = (id: string, role: string) => {
+    if (role === "Course") {
+      router.push(`/courses/${id}`);
+    } else if (role === "Instructor" || role === "Student") {
+      router.push(`/users/${id}`);
+    }
   };
 
   return (
@@ -161,13 +154,11 @@ export default function SearchResultsPage() {
             {results.map((result) => (
               <li
                 key={result.id}
-                className="px-4 py-2 border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                className="px-4 py-2 border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="font-bold" onClick={() => handleResultClick(result.id, result.role!)}>
-                      {result.name}
-                    </span>
+                    <span className="font-bold">{result.name}</span>
                     {result.email && (
                       <span className="text-gray-500 dark:text-gray-400 ml-2">
                         ({result.email})
@@ -184,6 +175,22 @@ export default function SearchResultsPage() {
                         className="text-blue-500 hover:underline"
                       >
                         View Courses
+                      </button>
+                    )}
+                    {result.role === "Instructor" && (
+                      <button
+                        onClick={() => handleResultClick(result.id, result.role!)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        View Profile
+                      </button>
+                    )}
+                    {result.role === "Course" && (
+                      <button
+                        onClick={() => handleResultClick(result.id, result.role!)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        View Course
                       </button>
                     )}
                   </div>

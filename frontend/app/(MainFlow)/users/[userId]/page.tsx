@@ -13,11 +13,11 @@ interface UserDetails {
 }
 
 export default function UserDetailsPage() {
-  const { userId } = useParams(); // Extract the userId from the dynamic route
+  const { userId } = useParams();
   const router = useRouter();
   const [user, setUser] = useState<UserDetails | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null); // Role of the logged-in user
-  const [rating, setRating] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentRating, setCurrentRating] = useState<number | null>(null); // Track the current rating
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch user details and logged-in user role
@@ -27,9 +27,17 @@ export default function UserDetailsPage() {
       try {
         const response = await axiosInstance.get(`/users/${userId}`);
         setUser(response.data);
+
+        // Calculate the average rating
+        if (response.data.ratings && response.data.ratings.length > 0) {
+          const averageRating =
+            response.data.ratings.reduce((acc: number, rating: number) => acc + rating, 0) /
+            response.data.ratings.length;
+          setCurrentRating(averageRating);
+        }
       } catch (error) {
         console.error("Failed to fetch user details:", error);
-        router.push("/404"); // Redirect to 404 if the user is not found
+        router.push("/404");
       }
     };
 
@@ -47,12 +55,15 @@ export default function UserDetailsPage() {
   }, [userId, router]);
 
   const handleRating = async (rating: number) => {
-    if (!user || !user.id || user.role !== "Instructor") return;
+    if (!user || user.role !== "Instructor") return;
     setIsSubmitting(true);
 
     try {
-      await axiosInstance.post(`/users/instructor/${user.id}/rate`, { rating });
+      await axiosInstance.post(`/users/instructor/${userId}/rate`, { rating });
       alert("Instructor rated successfully!");
+
+      // Update the current rating after submission
+      setCurrentRating(rating);
     } catch (error) {
       console.error("Failed to rate instructor:", error);
       alert("Failed to submit rating. Please try again.");
@@ -77,20 +88,21 @@ export default function UserDetailsPage() {
           <div className="mt-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Rate Instructor</h2>
             <div className="flex items-center space-x-2">
-  {[1, 2, 3, 4, 5].map((star) => (
-    <button
-      key={star}
-      onClick={() => handleRating(star)}
-      disabled={isSubmitting}
-      className={`text-2xl ${
-        (rating ?? 0) >= star ? "text-yellow-400" : "text-gray-400"
-      } hover:text-yellow-400 transition`}
-    >
-      ★
-    </button>
-  ))}
-</div>
-
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => handleRating(star)}
+                  disabled={isSubmitting}
+                  className={`text-2xl ${
+                    currentRating && currentRating >= star
+                      ? "text-yellow-400"
+                      : "text-gray-400 hover:text-yellow-400"
+                  } transition`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
             {isSubmitting && <p className="text-gray-500 mt-2">Submitting your rating...</p>}
           </div>
         )}
