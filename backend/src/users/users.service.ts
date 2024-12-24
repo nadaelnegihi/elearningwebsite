@@ -36,10 +36,15 @@ export class UsersService {
   
   async getUserCourses(userId: mongoose.Schema.Types.ObjectId): Promise<any> {
     const user = await this.UserModel.findById(userId)
-      .populate('studentCourses.course')
-      .populate('teachingCourses')
-      .exec();
-
+    .populate({
+      path: 'studentCourses.course',
+      match: { isAvailable: true }, // Only populate courses with isAvailable: true
+    })
+    .populate({
+      path: 'teachingCourses',
+      match: { isAvailable: true }, // Only populate courses with isAvailable: true
+    })
+    .exec();
     if (!user) {
       throw new Error('User not found');
     }

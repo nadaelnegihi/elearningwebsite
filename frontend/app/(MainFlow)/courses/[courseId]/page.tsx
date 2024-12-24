@@ -4,7 +4,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/app/lib/axiosInstance";
 
-interface CourseDetails {
+export interface CourseDetails {
+  _id: string;
   id: string;
   title: string;
   description: string;
@@ -30,7 +31,6 @@ export default function CourseDetailsPage() {
   const [enrollLoading, setEnrollLoading] = useState(false); // Track enroll button loading state
 
   useEffect(() => {
-    // Fetch course details
     const fetchCourseDetails = async () => {
       if (!courseId) return;
       try {
@@ -39,6 +39,8 @@ export default function CourseDetailsPage() {
       } catch (error) {
         console.error("Failed to fetch course details:", error);
         router.push("/404");
+      } finally {
+        setLoading(false); // Ensure this is called
       }
     };
 
@@ -54,12 +56,12 @@ export default function CourseDetailsPage() {
 
     // Fetch modules
     const fetchModules = async () => {
-      if (!courseId || !role) return;
+      if (!courseId || !role || role === "admin") return; // Skip module fetch for admin users
       try {
         const endpoint =
           role === "student"
-            ? `/courses/course/${courseId}/student`
-            : `/courses/course/${courseId}/instructor`;
+            ? `/modules/course/${courseId}/student`
+            : `/modules/course/${courseId}/instructor`;
         const response = await axiosInstance.get(endpoint);
         setModules(response.data);
       } catch (error) {
@@ -126,31 +128,38 @@ export default function CourseDetailsPage() {
         )}
 
         {/* Modules Section */}
-        <div className="mt-6">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Modules</h2>
-          {modules.length > 0 ? (
-            <ul className="list-disc list-inside">
-              {modules.map((module) => (
-                <li key={module.id} className="text-gray-700 dark:text-gray-300 mb-2">
-                  <strong>{module.title}</strong> - Level: {module.difficulty_level}
-                  {module.resources.length > 0 && (
-                    <ul className="list-inside list-square ml-4 mt-2">
-                      {module.resources.map((resource, index) => (
-                        <li key={index}>
-                          <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                            {resource.name}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-600 dark:text-gray-400">No modules available.</p>
-          )}
-        </div>
+        {role !== "admin" && (
+          <div className="mt-6">
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Modules</h2>
+            {modules.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {modules.map((module) => (
+                  <li key={module.id} className="text-gray-700 dark:text-gray-300 mb-2">
+                    <strong>{module.title}</strong> - Level: {module.difficulty_level}
+                    {module.resources.length > 0 && (
+                      <ul className="list-inside list-square ml-4 mt-2">
+                        {module.resources.map((resource, index) => (
+                          <li key={index}>
+                            <a
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500"
+                            >
+                              {resource.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400">No modules available.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

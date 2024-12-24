@@ -14,6 +14,7 @@ if (existsSync(envPath)) {
 }
 
 async function bootstrap() {
+<<<<<<< HEAD
   try {
     console.log('Initializing application...');
     
@@ -42,6 +43,22 @@ async function bootstrap() {
     console.error('Error during application bootstrap:', error.message);
     process.exit(1); // Exit the process with an error code
   }
+=======
+  console.log('PORT:', process.env.PORT); // Log the PORT value
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: `http://localhost:${process.env.FRONTEND_PORT || 3000}`, // Frontend origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow credentials (cookies)
+    allowedHeaders: ['Authorization', 'Content-Type'],
+  });
+  
+  app.useGlobalPipes(new ValidationPipe());
+  const port = process.env.PORT || 3000;
+  console.log(`Application running on port: ${port}`);
+  await app.listen(port);
+  
+>>>>>>> e3e0927de9e1d0802edffd823b66a7c447a9a9f1
 }
 
 bootstrap();
