@@ -131,11 +131,17 @@ export default function SearchResultsPage() {
     console.log("Navigating to:", id, "Role:", role); // Log the clicked result
     if (role === "Course") {
       router.push(`/courses/${id}`);
-    } else if (role === "Instructor" || role === "Student") {
+    } else if (role === "Instructor") {
+      router.push(`/users/${id}`);
+    } else if (role === "Student") {
       router.push(`/users/${id}`);
     }
   };
-  
+
+  // Handle view courses for students
+  const handleViewCourses = (studentId: string) => {
+    router.push(`/courses/students/${studentId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
@@ -155,21 +161,32 @@ export default function SearchResultsPage() {
             {results.map((result) => (
               <li
                 key={result.id}
-                onClick={() => handleResultClick(result.id, result.role!)}
                 className="px-4 py-2 border-b border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="font-bold">{result.name}</span>
+                    <span className="font-bold" onClick={() => handleResultClick(result.id, result.role!)}>
+                      {result.name}
+                    </span>
                     {result.email && (
                       <span className="text-gray-500 dark:text-gray-400 ml-2">
                         ({result.email})
                       </span>
                     )}
                   </div>
-                  <span className="text-sm text-gray-400 dark:text-gray-500">
-                    {result.role}
-                  </span>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-400 dark:text-gray-500">
+                      {result.role}
+                    </span>
+                    {result.role === "Student" && (
+                      <button
+                        onClick={() => handleViewCourses(result.id)}
+                        className="text-blue-500 hover:underline"
+                      >
+                        View Courses
+                      </button>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}

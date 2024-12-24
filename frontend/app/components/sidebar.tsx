@@ -43,17 +43,17 @@ export default function Sidebar() {
     if (!coursesOpen) {
       try {
         const response = await axiosInstance.get("/users/courses");
-        
+
         // Ensure all courses are properly mapped
         const validCourses = response.data.courses.map((course: Course | { course: Course }) => {
-          const c = (course as unknown as { course: Course }).course || course
+          const c = (course as unknown as { course: Course }).course || course;
           return {
             _id: c._id,
             title: c.title,
             description: c.description,
-          }
+          };
         });
-        
+
         setCourses(validCourses);
       } catch (error: any) {
         console.error("Error fetching courses:", error.response?.data || error.message);
@@ -91,13 +91,6 @@ export default function Sidebar() {
 
         {/* Sidebar Links */}
         <ul className="flex-grow space-y-2 mt-4">
-          <li>
-            <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
-              <i className="fas fa-home mr-4"></i>
-              {isOpen && <span>Dashboards</span>}
-            </Link>
-          </li>
-
           {/* Courses Section */}
           <li>
             <button
@@ -144,30 +137,29 @@ export default function Sidebar() {
             )}
           </li>
 
-          <li>
-            <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
-              <i className="fas fa-graduation-cap mr-4"></i>
-              {isOpen && <span>Academic</span>}
-            </Link>
-          </li>
-          <li>
-            <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
-              <i className="fas fa-comments mr-4"></i>
-              {isOpen && <span>Group Chat</span>}
-            </Link>
-          </li>
-          <li>
-            <Link href="#" className="flex items-center p-3 hover:bg-gray-700">
-              <i className="fas fa-bell mr-4"></i>
-              {isOpen && <span>Notifications</span>}
-            </Link>
-          </li>
-          <li>
-            <Link href="/progress" className="flex items-center p-3 hover:bg-gray-700">
-              <i className="fas fa-bell mr-4"></i>
-              {isOpen && <span>Progress</span>}
-            </Link>
-          </li>
+          {userRole === "admin" && (
+            <li>
+              <Link
+                href="/users/allusers"
+                className="flex items-center p-3 hover:bg-gray-700"
+              >
+                <i className="fas fa-users mr-4"></i>
+                {isOpen && <span>View Users</span>}
+              </Link>
+            </li>
+          )}
+
+          {(userRole === "instructor" || userRole === "student") && (
+            <li>
+              <Link
+                href="/progress"
+                className="flex items-center p-3 hover:bg-gray-700"
+              >
+                <i className="fas fa-chart-line mr-4"></i>
+                {isOpen && <span>Progress</span>}
+              </Link>
+            </li>
+          )}
         </ul>
 
         {/* Sidebar Footer */}

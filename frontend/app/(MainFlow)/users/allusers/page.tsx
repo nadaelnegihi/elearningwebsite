@@ -47,10 +47,6 @@ export default function ManageUsersPage() {
     }
   };
 
-  const handleViewCourses = (studentId: string) => {
-    router.push(`/courses/allcoursesstudent?studentId=${studentId}`);
-  };
-
   if (loading) {
     return <div className="text-center text-white mt-10">Loading users...</div>;
   }
@@ -90,14 +86,6 @@ export default function ManageUsersPage() {
                 <td className="px-6 py-4">{user.email}</td>
                 <td className="px-6 py-4">{user.role}</td>
                 <td className="px-6 py-4 flex space-x-2">
-                  {user.role === "student" && (
-                    <button
-                      onClick={() => handleViewCourses(user._id)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition"
-                    >
-                      View Courses
-                    </button>
-                  )}
                   <button
                     onClick={() => handleDeleteUser(user._id)}
                     className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-500 transition"
