@@ -30,7 +30,7 @@ export class NotesService {
   async getNotesByUser(userId: string): Promise<Note[]> {
     return this.noteModel.find({ userId: new mongoose.Types.ObjectId(userId) }).exec();
   }
-  
+
   // Edit a note
   async editNote(noteId: mongoose.Types.ObjectId, updateNoteDto: UpdateNoteDto): Promise<Note> {
     const { content } = updateNoteDto;
@@ -55,4 +55,13 @@ export class NotesService {
       throw new NotFoundException('Note not found');
     }
   }
+  // Retrieve a note by ID
+async getNoteById(noteId: mongoose.Types.ObjectId): Promise<Note> {
+  const note = await this.noteModel.findOne({ noteId }).exec();
+  if (!note) {
+    throw new NotFoundException('Note not found');
+  }
+  return note;
+}
+
 }

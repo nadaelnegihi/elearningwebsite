@@ -72,7 +72,7 @@ export default function Sidebar() {
   };
 
   if (userRole === null) {
-    return <div>Loading user data...</div>; // Show a loading state until the role is fetched
+    return <div>Loading user data...</div>; 
   }
 
   return (

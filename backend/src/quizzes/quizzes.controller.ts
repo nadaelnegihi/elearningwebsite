@@ -18,6 +18,7 @@ export class QuizzesController {
     async createQuestion(@Body() createQuestionDto: CreateQuestionDto): Promise<Questionbank> {
       return this.quizService.createQuestion(createQuestionDto);
     }
+    
     @UseGuards(AuthGuard, authorizationGuard)
     @Roles(Role.Instructor)
     @Post('create')
@@ -26,19 +27,19 @@ export class QuizzesController {
       return this.quizService.createQuiz(createQuizDto, instructorId);
     }
     
- @UseGuards(AuthGuard, authorizationGuard)
-@Roles(Role.Student, Role.Instructor)
-@Get(':moduleId') // Route to fetch quizzes by module
-async getQuizzesByModule(@Param('moduleId') moduleId: string) {
-  const quizzes = await this.quizService.getQuizzesByModule(
-    new mongoose.Types.ObjectId(moduleId),
-  );
-  return { quizzes };
-}
-
+    @UseGuards(AuthGuard, authorizationGuard)
+    @Roles(Role.Student, Role.Instructor)
+    @Get(':moduleId') // Route to fetch quizzes by module
+    async getQuizzesByModule(@Param('moduleId') moduleId: string) {
+      const quizzes = await this.quizService.getQuizzesByModule(
+        new mongoose.Types.ObjectId(moduleId)
+      );
+      return { quizzes };
+    }
+    
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Student, Role.Instructor)
-  @Get(':quizId')
+  @Get('fetch/:quizId')
   async getQuizById(@Param('quizId') quizId: string) {
     const objectId = new mongoose.Types.ObjectId(quizId); // Convert `quizId` to ObjectId
     return this.quizService.getQuizById(objectId);
@@ -60,6 +61,5 @@ async deleteQuestion(@Param('questionId') questionId: string) {
   await this.quizService.deleteQuestion(questionId);
   return { message: 'Question deleted successfully' };
 }
-
 }
 

@@ -60,6 +60,13 @@ import {
       await this.notesService.deleteNote(noteId);
       return { message: 'Note deleted successfully.' };
     }
+    @UseGuards(AuthGuard)
+@Roles(Role.Student)
+@Get(':noteId')
+async getNoteById(@Param('noteId') noteId: mongoose.Types.ObjectId) {
+  return this.notesService.getNoteById(noteId);
+}
+
     
   }
   

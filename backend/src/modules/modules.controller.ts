@@ -82,14 +82,32 @@ export class ModulesController {
       return;
     }
   
-    // Set headers to prompt file download
-    res.setHeader('Content-Disposition', `attachment; filename=${filePath.split('/').pop()}`);
+    // Extract the file name and extension
+    const fileName = filePath.split('/').pop();
+    const fileExtension = fileName?.split('.').pop();
+  
+    // Set headers for file download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    
+    // Stream the file to the response
     res.download(filePath, (err) => {
       if (err) {
         console.error('Error downloading file:', err);
         res.status(500).send({ message: 'Error downloading the file.' });
       }
     });
+  }
+  
+  // Helper method to map file extensions to MIME types
+  private getMimeType(extension: string | undefined): string {
+    const mimeTypes: { [key: string]: string } = {
+      pdf: 'application/pdf',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+    };
+    return mimeTypes[extension?.toLowerCase() || ''] || 'application/octet-stream';
   }
   
 

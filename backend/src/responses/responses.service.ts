@@ -16,7 +16,7 @@ export class ResponsesService {
 
   async submitQuiz(
     quizId: mongoose.Types.ObjectId,
-    submitQuizDto: Omit<SubmitQuizDto, 'quizId'>,
+    submitQuizDto: Omit<SubmitQuizDto, 'quizId'>
   ): Promise<{
     percentage: number;
     feedback: string[];
@@ -26,16 +26,10 @@ export class ResponsesService {
   
     let score = 0;
     const feedback: string[] = [];
-    const detailedResults: {
-      questionId: string;
-      status: string;
-      selectedAnswer: string;
-      correctAnswer: string;
-    }[] = [];
+    const detailedResults = [];
   
     for (const { questionId, selectedAnswer } of answers) {
-      // Query by `questionId` field
-      const question = await this.questionModel.findOne({ questionId }).exec();
+      const question = await this.questionModel.findById(questionId).exec();
       if (!question) {
         throw new NotFoundException(`Question with ID ${questionId} not found`);
       }
@@ -62,33 +56,23 @@ export class ResponsesService {
       }
     }
   
-    // Calculate percentage
-    const totalQuestions = answers.length;
-    const percentage = (score / totalQuestions) * 100;
+    const percentage = (score / answers.length) * 100;
   
-    // Update user's scores array (only for students)
     const user = await this.userModel.findById(studentId);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${studentId} not found`);
-    }
-  
-    if (user.role === 'student') {
-      user.scores.push(percentage); // Store the percentage score
+    if (user?.role === 'student') {
+      user.scores.push(percentage);
       await user.save();
     }
   
-    // Generate overall advice
-    const passingScore = totalQuestions * 0.5; // 50% passing threshold
     const advice =
-      score >= passingScore
+      score >= answers.length * 0.5
         ? 'Well done! Keep progressing.'
         : 'You did not pass. Please review the module content and try again.';
   
-    // Return detailed results, percentage, and advice
     return {
       percentage,
-      feedback: [...feedback, advice], // High-level feedback
-      detailedResults, // Detailed question feedback
+      feedback: [...feedback, advice],
+      detailedResults,
     };
   }
 }  

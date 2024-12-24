@@ -7,6 +7,7 @@ import axiosInstance from "@/app/lib/axiosInstance";
 interface Course {
   _id: string;
   title: string;
+  description: string; // Added description field
   status: string; // enrolled or completed
 }
 
@@ -26,12 +27,27 @@ export default function StudentCoursesPage() {
       try {
         const response = await axiosInstance.get(`/users/${studentId}/courses`);
         const { studentName, courses } = response.data;
-
+  
         setStudentName(studentName);
-
+  
         // Separate courses into enrolled and completed
-        setEnrolledCourses(courses.filter((course: any) => course.status === "enrolled"));
-        setCompletedCourses(courses.filter((course: any) => course.status === "completed"));
+        setEnrolledCourses(
+          courses
+            .filter((item: any) => item.status === "enrolled")
+            .map((item: any) => ({
+              ...item.course, // Extract the `course` details
+              status: item.status, // Include the status for display
+            }))
+        );
+  
+        setCompletedCourses(
+          courses
+            .filter((item: any) => item.status === "completed")
+            .map((item: any) => ({
+              ...item.course, // Extract the `course` details
+              status: item.status, // Include the status for display
+            }))
+        );
       } catch (error: any) {
         console.error("Error fetching student courses:", error.response?.data || error.message);
         setError("Failed to fetch student courses. Please try again.");
@@ -39,11 +55,15 @@ export default function StudentCoursesPage() {
         setLoading(false);
       }
     };
-
+  
     if (studentId) {
       fetchStudentCourses();
     }
   }, [studentId]);
+  
+  const navigateToCourseDetails = (courseId: string) => {
+    router.push(`/courses/${courseId}`);
+  };
 
   if (loading) {
     return <div className="text-center text-white mt-10">Loading...</div>;
@@ -68,9 +88,11 @@ export default function StudentCoursesPage() {
               enrolledCourses.map((course: Course) => (
                 <div
                   key={course._id}
-                  className="block bg-gray-800 border border-gray-700 rounded-lg shadow-md p-4"
+                  onClick={() => navigateToCourseDetails(course._id)}
+                  className="block bg-gray-800 border border-gray-700 rounded-lg shadow-md p-4 cursor-pointer hover:bg-gray-700"
                 >
                   <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                  <p className="text-sm text-gray-400 mb-2">{course.description}</p>
                   <p className="text-sm text-gray-400">Status: Enrolled</p>
                 </div>
               ))
@@ -88,9 +110,11 @@ export default function StudentCoursesPage() {
               completedCourses.map((course: Course) => (
                 <div
                   key={course._id}
-                  className="block bg-gray-800 border border-gray-700 rounded-lg shadow-md p-4"
+                  onClick={() => navigateToCourseDetails(course._id)}
+                  className="block bg-gray-800 border border-gray-700 rounded-lg shadow-md p-4 cursor-pointer hover:bg-gray-700"
                 >
                   <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                  <p className="text-sm text-gray-400 mb-2">{course.description}</p>
                   <p className="text-sm text-gray-400">Status: Completed</p>
                 </div>
               ))

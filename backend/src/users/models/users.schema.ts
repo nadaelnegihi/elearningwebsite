@@ -23,16 +23,17 @@ export class User {
 
   @Prop({
     enum: ['Below Average', 'Average', 'Above Average'],
-    required: false, // Required logic handled in pre-save hook
+    default: 'Below Average', // Default level for students
+    required: false,
   })
-  level?: string;
+  level: string;
 
   @Prop({
     type: [{ 
       course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }, 
       status: { type: String, enum: ['enrolled', 'completed'], default: 'enrolled' } 
     }],
-    required: false, // Required logic handled in pre-save hook
+    required: false,
   })
   studentCourses?: {
     course: mongoose.Types.ObjectId;
@@ -41,13 +42,13 @@ export class User {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
-    required: false, // Required logic handled in pre-save hook
+    required: false,
   })
   teachingCourses?: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }],
-    required: false, // Required logic handled in pre-save hook
+    required: false,
   })
   quizResponses?: mongoose.Types.ObjectId[];
 
@@ -56,14 +57,14 @@ export class User {
 
   @Prop({
     type: [Number],
-    required: false, // Required logic handled in pre-save hook
+    required: false,
   })
   scores?: number[];
 
   @Prop({
     type: [Number],
     default: [],
-    required: false, // Required logic handled in pre-save hook
+    required: false,
   })
   ratings?: number[];
 }
@@ -75,6 +76,9 @@ UsersSchema.pre<UserDocument>('save', function (next) {
   if (this.role === 'student') {
     this.teachingCourses = undefined;
     this.ratings = undefined;
+    if (!this.level) {
+      this.level = 'Below Average'; // Ensure default level for students
+    }
   } else if (this.role === 'instructor') {
     this.level = undefined;
     this.studentCourses = undefined;
@@ -90,6 +94,8 @@ UsersSchema.pre<UserDocument>('save', function (next) {
   }
   next();
 });
+
+// Set toJSON transformation logic
 UsersSchema.set('toJSON', {
   transform: (doc, ret) => {
     if (ret.role === 'student') {
@@ -111,4 +117,3 @@ UsersSchema.set('toJSON', {
     return ret;
   },
 });
-

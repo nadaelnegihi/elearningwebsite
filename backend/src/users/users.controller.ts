@@ -18,6 +18,7 @@ export class UsersController {
     const userId = req.user._id; // Extract `userid` from the JWT
     return this.usersService.getUserCourses(userId);
   }
+ 
 
   @UseGuards(AuthGuard, authorizationGuard)
   @Roles(Role.Instructor, Role.Admin)
@@ -35,6 +36,12 @@ export class UsersController {
     @Query('query') query: string,
   ): Promise<UserDocument[]> {
     return this.usersService.searchInstructors(query);
+  }
+  @UseGuards(AuthGuard, authorizationGuard)
+  @Roles(Role.Instructor)
+  @Get('students')
+  async getAllstudents(): Promise<UserDocument[]> {
+    return this.usersService.findAllstudents();
   }
   @UseGuards(AuthGuard)
 @Get('profile')
@@ -84,6 +91,7 @@ async getUser(@Param('userId') userId: string) {
 async getAllUsers(): Promise<UserDocument[]> {
   return this.usersService.findAll();
 }
+
 @UseGuards(AuthGuard, authorizationGuard)
 @Roles(Role.Admin)
 @Delete('admin/delete/:id')

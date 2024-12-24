@@ -101,6 +101,11 @@ export class UsersService {
       .select('-password') // Exclude the password field from the results
       .exec();
   }
+  async findAllstudents(): Promise<UserDocument[]> {
+    return this.UserModel.find({ role: { $in: ['student'] } }) // Filter by roles
+      .select('-password') // Exclude the password field from the results
+      .exec();
+  }
   
   async deleteUser(userId: mongoose.Schema.Types.ObjectId): Promise<void> {
     const result = await this.UserModel.findByIdAndDelete(userId);
@@ -109,27 +114,35 @@ export class UsersService {
     }
 
 }
+async enrollInCourse(
+  userId: mongoose.Types.ObjectId,
+  courseId: mongoose.Types.ObjectId
+): Promise<{ message: string }> {
+  // Fetch the student by ID
+  const user = await this.UserModel.findById(userId);
 
-  async enrollInCourse(userId: mongoose.Types.ObjectId, courseId: mongoose.Types.ObjectId): Promise<void> {
-    // Fetch the student by ID
-    const user = await this.UserModel.findById(userId);
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-    // Check if the course is already enrolled
-    const isAlreadyEnrolled = user.studentCourses.some((courseStatus) =>
-      courseStatus.course.equals(courseId),
-    );
-
-    if (isAlreadyEnrolled) {
-      throw new Error('Already enrolled in this course');
-    }
-
-    // Add the course to the studentCourses array
-    user.studentCourses.push({ course: courseId, status: 'enrolled' });
-    await user.save();
+  if (!user) {
+    throw new Error('User not found');
   }
+
+  // Check if the course is already enrolled
+  const isAlreadyEnrolled = user.studentCourses.some((courseStatus) =>
+    courseStatus.course.equals(courseId),
+  );
+
+  if (isAlreadyEnrolled) {
+    // Return a message instead of throwing an error
+    return { message: 'Already enrolled in this course' };
+  }
+
+  // Add the course to the studentCourses array
+  user.studentCourses.push({ course: courseId, status: 'enrolled' });
+  await user.save();
+
+  // Return a success message
+  return { message: 'Successfully enrolled in the course' };
+}
+
   async getStudentCoursesByInstructor(
     instructorId: mongoose.Types.ObjectId,
     studentId: mongoose.Types.ObjectId

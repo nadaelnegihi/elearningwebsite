@@ -13,22 +13,39 @@ export interface CourseDetails {
   created_by: string;
 }
 
+interface Resource {
+  _id: string;
+  name: string;
+}
+
 interface Module {
-  id: string;
+  _id: string;
   title: string;
   difficulty_level: string;
-  resources: { name: string; url: string }[];
+  isOutdated: boolean;
+  createdAt: string;
+  updatedAt: string;
+  resources: Resource[];
+  averageRating?: number;
+  quizzes?: Quiz[]; // Add quizzes property to module
+}
+
+interface Quiz {
+  _id: string;
+  title: string;
 }
 
 export default function CourseDetailsPage() {
-  const { courseId } = useParams(); // Get the dynamic route parameter
+  const { courseId } = useParams();
   const router = useRouter();
   const [course, setCourse] = useState<CourseDetails | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
-  const [role, setRole] = useState<string | null>(null); // Store user role
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [enrolled, setEnrolled] = useState(false); // Track enrollment status
-  const [enrollLoading, setEnrollLoading] = useState(false); // Track enroll button loading state
+  const [enrolled, setEnrolled] = useState(false);
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [ratings, setRatings] = useState<{ [key: string]: number }>({});
+  const [courseRating, setCourseRating] = useState<number | null>(null); // Track course rating
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -40,11 +57,10 @@ export default function CourseDetailsPage() {
         console.error("Failed to fetch course details:", error);
         router.push("/404");
       } finally {
-        setLoading(false); // Ensure this is called
+        setLoading(false);
       }
     };
 
-    // Fetch user role
     const fetchUserRole = async () => {
       try {
         const response = await axiosInstance.get("/users/profile");
@@ -54,16 +70,33 @@ export default function CourseDetailsPage() {
       }
     };
 
-    // Fetch modules
-    const fetchModules = async () => {
-      if (!courseId || !role || role === "admin") return; // Skip module fetch for admin users
+    const fetchModulesWithQuizzes = async () => {
+      if (!courseId || !role || role === "admin") return;
       try {
         const endpoint =
           role === "student"
             ? `/modules/course/${courseId}/student`
             : `/modules/course/${courseId}/instructor`;
+
         const response = await axiosInstance.get(endpoint);
-        setModules(response.data);
+
+        const modulesWithQuizzes = await Promise.all(
+          response.data.map(async (module: Module) => {
+            try {
+              const quizzesResponse = await axiosInstance.get(`/quizzes/${module._id}`);
+              return { ...module, quizzes: quizzesResponse.data.quizzes || [] };
+            } catch (error) {
+              console.error(`Failed to fetch quizzes for module ${module._id}:`, error);
+              return { ...module, quizzes: [] }; // Default to no quizzes if the endpoint fails
+            }
+          })
+        );
+
+        const sortedModules = modulesWithQuizzes.sort(
+          (a: Module, b: Module) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setModules(sortedModules);
       } catch (error) {
         console.error("Failed to fetch modules:", error);
       } finally {
@@ -73,21 +106,91 @@ export default function CourseDetailsPage() {
 
     fetchCourseDetails();
     fetchUserRole();
-    fetchModules();
+    fetchModulesWithQuizzes();
   }, [courseId, role, router]);
 
-  // Handle Enrollment
   const handleEnroll = async () => {
     if (!courseId) return;
     setEnrollLoading(true);
     try {
       await axiosInstance.post(`/users/enroll/${courseId}`);
-      setEnrolled(true);
-    } catch (error) {
-      console.error("Failed to enroll in course:", error);
+      setEnrolled(true); // Mark as enrolled if successful
+      alert("Successfully enrolled in the course!");
+    } catch (error: any) {
+      // Display a user-friendly message
+      const errorMessage =
+        error.response?.data?.message || "Failed to enroll. Please try again.";
+      alert(errorMessage);
     } finally {
       setEnrollLoading(false);
     }
+  };
+  const handleRateCourse = async (rating: number) => {
+    if (!courseId) return;
+    try {
+      await axiosInstance.post(`/courses/${courseId}/rate`, { rating });
+      setCourseRating(rating); // Update local rating state
+      alert("Course rated successfully!");
+    } catch (error) {
+      console.error("Failed to rate course:", error);
+      alert("Failed to submit rating. Please try again.");
+    }
+  };
+
+  const handleTakeQuiz = (moduleId: string, quizId: string) => {
+    router.push(`/courses/${courseId}/modules/${moduleId}/quiz/${quizId}`);
+  };
+  
+
+  const handleDownloadResource = async (moduleId: string, resourceId: string, fileName: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/modules/${moduleId}/resources/${resourceId}/download`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download file. Please try again.");
+    }
+  };
+
+  const handleRateModule = async (moduleId: string, rating: number) => {
+    try {
+      await axiosInstance.post(`/modules/${moduleId}/rate`, { rating });
+      setRatings((prevRatings) => ({ ...prevRatings, [moduleId]: rating })); // Update the rating locally
+      alert("Rating submitted successfully!");
+    } catch (error) {
+      console.error("Failed to rate module:", error);
+      alert("Failed to submit rating. Please try again.");
+    }
+  };
+
+  const navigateToUpdateModule = (moduleId: string) => {
+    router.push(`/courses/${courseId}/modules/${moduleId}/update`);
+  };
+
+  const navigateToUploadMedia = (moduleId: string) => {
+    router.push(`/courses/${courseId}/modules/${moduleId}/upload`);
+  };
+
+  const navigateToCreateQuestion = (moduleId: string) => {
+    router.push(`/courses/${courseId}/modules/${moduleId}/createquestion`);
+  };
+
+  const navigateToCreateQuiz = (moduleId: string) => {
+    router.push(`/courses/${courseId}/modules/${moduleId}/createquiz`);
   };
 
   if (loading || !course) {
@@ -106,60 +209,181 @@ export default function CourseDetailsPage() {
           <strong>Instructor:</strong> {course.created_by}
         </p>
 
-        {/* Enroll Button for Students Only */}
-        {role === "student" && (
+        {/* Enroll Button */}
+        {role === "student" && !enrolled && (
+          <button
+            onClick={handleEnroll}
+            disabled={enrollLoading}
+            className={`mt-4 px-6 py-2 rounded-md ${
+              enrollLoading
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-500 text-white"
+            }`}
+          >
+            {enrollLoading ? "Enrolling..." : "Enroll in Course"}
+          </button>
+        )}
+
+{role === "student" && (
           <div className="mt-6">
-            {!enrolled ? (
-              <button
-                onClick={handleEnroll}
-                disabled={enrollLoading}
-                className={`px-6 py-2 text-white rounded-md ${
-                  enrollLoading
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-500"
-                }`}
-              >
-                {enrollLoading ? "Enrolling..." : "Enroll in Course"}
-              </button>
-            ) : (
-              <p className="text-green-600 font-bold">You are enrolled in this course!</p>
-            )}
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              Rate this Course:
+            </h3>
+            <div className="flex items-center space-x-2 mt-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => handleRateCourse(star)}
+                  className={`text-lg ${
+                    courseRating && courseRating >= star
+                      ? "text-yellow-400"
+                      : "text-gray-400 hover:text-yellow-400"
+                  }`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Modules Section */}
-        {role !== "admin" && (
-          <div className="mt-6">
-            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Modules</h2>
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Modules</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {modules.length > 0 ? (
-              <ul className="list-disc list-inside">
-                {modules.map((module) => (
-                  <li key={module.id} className="text-gray-700 dark:text-gray-300 mb-2">
-                    <strong>{module.title}</strong> - Level: {module.difficulty_level}
-                    {module.resources.length > 0 && (
-                      <ul className="list-inside list-square ml-4 mt-2">
-                        {module.resources.map((resource, index) => (
-                          <li key={index}>
-                            <a
-                              href={resource.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500"
-                            >
-                              {resource.name}
-                            </a>
-                          </li>
-                        ))}
+              modules.map((module) => (
+                <div
+                  key={module._id}
+                  className="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg shadow hover:shadow-lg transition"
+                >
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                    {module.title}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    Level: {module.difficulty_level}
+                  </p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    Created At: {new Date(module.createdAt).toLocaleString()}
+                  </p>
+
+                  {/* Quizzes Section */}
+                  {module.quizzes && module.quizzes.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200">Quizzes:</h4>
+                      <ul>
+                      {module.quizzes.map((quiz) => (
+  <li key={quiz._id} className="flex justify-between items-center mt-2">
+    <span className="text-gray-800 dark:text-gray-200">
+      {quiz.title || `Quiz`}
+    </span>
+    {role === "student" && (
+      <button
+        onClick={() => handleTakeQuiz(module._id, quiz._id)}
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition"
+      >
+        Take Quiz
+      </button>
+    )}
+  </li>
+))}
+
                       </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    </div>
+                  )}
+
+                  {/* Resources Section */}
+                  {role === "student" && (
+                    <div className="mt-4">
+                      {module.resources.map((resource) => (
+  <div key={resource._id} className="flex justify-between items-center mt-2">
+    <button
+      onClick={() =>
+        handleDownloadResource(module._id, resource._id, resource.name)
+      }
+      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition"
+    >
+      Download Content
+    </button>
+  </div>
+))}
+                      <div className="mt-4">
+                        <span className="text-gray-800 dark:text-gray-200">Rate this module:</span>
+                        <div className="flex items-center space-x-2 mt-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => handleRateModule(module._id, star)}
+                              className={`text-lg ${
+                                ratings[module._id] >= star
+                                  ? "text-yellow-400"
+                                  : "text-gray-400 hover:text-yellow-400"
+                              }`}
+                            >
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Instructor Section */}
+                  {role === "instructor" && (
+                    <div className="mt-4 flex flex-col space-y-4">
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={() => navigateToUpdateModule(module._id)}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition"
+                        >
+                          Update Module
+                        </button>
+                        <button
+                          onClick={() => navigateToUploadMedia(module._id)}
+                          className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-400 transition"
+                        >
+                          Upload Media
+                        </button>
+                      </div>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={() => navigateToCreateQuestion(module._id)}
+                          className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-400 transition"
+                        >
+                          Create Question
+                        </button>
+                        <button
+                          onClick={() => navigateToCreateQuiz(module._id)}
+                          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-400 transition"
+                        >
+                          Create Quiz
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {role === "student" && (
+  <div className="mt-4 flex space-x-4">
+    <button
+      onClick={() => router.push(`/courses/${courseId}/modules/${module._id}/add-note`)}
+      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-500 transition"
+    >
+      Add Note
+    </button>
+    <button
+      onClick={() => router.push(`/courses/${courseId}/modules/${module._id}/note`)}
+      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition"
+    >
+      View Notes
+    </button>
+  </div>
+)}
+
+                </div>
+              ))
             ) : (
               <p className="text-gray-600 dark:text-gray-400">No modules available.</p>
             )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

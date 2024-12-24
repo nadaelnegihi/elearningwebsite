@@ -148,13 +148,11 @@ export class ForumService {
     const newReply = new this.threadModel({
       content: createReplyDto.content,
       createdBy: userId,
-      threadId: createReplyDto.threadId,  // Make sure the threadId is passed with the reply
+      threadId: createReplyDto.threadId,  
     });
   
-    // Save the reply to the database
     const savedReply = await newReply.save();
   
-    // Add the reply ObjectId to the existing thread's replies array
     const updatedThread = await this.threadModel.findByIdAndUpdate(
       createReplyDto.threadId, // Find the thread by threadId
       { $push: { replies: savedReply._id } }, // Push the new reply's ObjectId to the replies array
@@ -174,5 +172,4 @@ export class ForumService {
       .populate('createdBy', 'name')
       .exec();
   }
-  
 }
