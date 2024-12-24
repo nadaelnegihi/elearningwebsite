@@ -10,6 +10,8 @@ import { AuthGuard } from 'src/auth/guards/authentication.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/decorators/roles.decorator';
 import { authorizationGuard } from 'src/auth/guards/authorization.guard';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import mongoose from 'mongoose';
 
 @Controller('forums')
 export class ForumController {
@@ -54,7 +56,16 @@ export class ForumController {
   @Roles(Role.Student, Role.Instructor)
   @Get(':postId/comments')
   async getComments(@Param('postId') postId: string) {
-    return this.forumService.getComments(postId);
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      throw new BadRequestException('Invalid postId format');
+    }
+  
+    const post = await this.forumService.getForumById(postId);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+  
+    return post.comments;
   }
 
   @UseGuards(AuthGuard, authorizationGuard)

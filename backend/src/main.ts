@@ -4,12 +4,13 @@ import * as dotenv from 'dotenv';
 import { existsSync } from 'fs';
 import { ValidationPipe } from '@nestjs/common';
 
+// Load environment variables from .env file (if it exists)
 const envPath = './.env';
 if (existsSync(envPath)) {
   dotenv.config({ path: envPath });
   console.log('Environment variables loaded from .env');
 } else {
-  console.error('.env file not found');
+  console.warn('.env file not found, relying on system environment variables.');
 }
 
 async function bootstrap() {
@@ -28,4 +29,5 @@ async function bootstrap() {
   await app.listen(port);
   
 }
+
 bootstrap();

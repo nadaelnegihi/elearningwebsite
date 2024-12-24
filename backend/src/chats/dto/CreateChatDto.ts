@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 export class CreateChatDto {
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   readonly conversationId: string;  // ID of the conversation or group chat
 
   @IsString()

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateCommentDto {
   @IsString()
@@ -7,6 +7,6 @@ export class CreateCommentDto {
   content: string; // Comment content
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   forumPostId: string; // ID of the forum post the comment belongs to
 }
